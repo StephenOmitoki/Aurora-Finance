@@ -1,0 +1,1915 @@
+<!DOCTYPE html>
+<html lang="en-CA" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#061305" id="metaTheme">
+<script>/* set before first paint so the canvas never flashes */
+document.documentElement.dataset.theme=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";</script>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Aurora V2 — money that moves with you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   AURORA — DESIGN TOKENS
+   Resolved at hue 142 — gamut mapped, contrast solved
+   ============================================================ */
+:root{
+  --c-050:#eff8ed;
+  --c-100:#d7ebd4;
+  --c-200:#b0d7ac;
+  --c-300:#84bc7d;
+  --c-400:#589c51;
+  --c-500:#3c7d36;
+  --c-600:#2c6027;
+  --c-700:#1f451c;
+  --c-800:#132b10;
+  --c-900:#061305;
+  --s-400:#a890fd;
+  --s-600:#6c58ad;
+  /* Role bindings live in the theme blocks below. The ramp above never
+     changes — only which rung each role points at. */
+
+  /* Tailwind v4 bridge — same values, ready if this moves to a build step */
+  --color-brand-050:#eff8ed; --color-brand-100:#d7ebd4; --color-brand-200:#b0d7ac;
+  --color-brand-300:#84bc7d; --color-brand-400:#589c51; --color-brand-500:#3c7d36;
+  --color-brand-600:#2c6027; --color-brand-700:#1f451c; --color-brand-800:#132b10;
+  --color-brand-900:#061305;
+
+  /* Type */
+  --f-display:'Bricolage Grotesque','Archivo',ui-sans-serif,system-ui,sans-serif;
+  --f-ui:'Instrument Sans',ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+
+  --r-sm:14px; --r-md:20px; --r-lg:28px; --r-pill:999px;
+  --ease:cubic-bezier(.22,.9,.24,1);
+  --ease-spring:cubic-bezier(.16,1.02,.32,1);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--canvas);
+  color:var(--text-primary);
+  font-family:var(--f-ui);
+  font-size:14px;
+  line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overscroll-behavior:none;
+}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px;border-radius:6px}
+::selection{background:var(--c-300);color:var(--text-on-action)}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ============================================================
+   THEMES — every ratio below is measured, not estimated.
+   c-900 on c-300 is 8.59:1, so the action binding is the same
+   in both modes and needs no override.
+   ============================================================ */
+/*THEME_START*/
+[data-theme="dark"]{
+  --canvas:#061305; --canvas-2:#132b10;
+  --text-primary:#ffffff;        /* 19.04:1 on canvas */
+  --text-secondary:#b0d7ac;      /* 11.93:1 */
+  --text-tertiary:#84bc7d;       /*  8.59:1 */
+  --accent-text:#b0d7ac;         /* 11.93:1 */
+  --icon:#b0d7ac;
+  --text-on-action:#061305;      /*  8.59:1 on c-300 */
+  --text-on-raised:#ffffff;      /* 10.90:1 on c-700 */
+  --text-on-alert:#061305;       /*  7.32:1 on s-400 */
+  --focus-ring:#b0d7ac;          /* 11.93:1 */
+  --pos:#b0d7ac;                 /* 11.93:1 */
+  --neg:#a890fd;                 /*  7.32:1 */
+  --pos-text:#d7ebd4;
+  --alert-surface:#a890fd; --alert-ink:#061305;
+  --chart-line:#84bc7d;
+  --gauge-1:#3c7d36; --gauge-2:#84bc7d; --gauge-3:#d7ebd4;
+  --bar-grad:linear-gradient(90deg,#589c51,#b0d7ac);
+
+  --fill-1:rgba(176,215,172,.07);
+  --fill-2:rgba(176,215,172,.10);
+  --fill-3:rgba(176,215,172,.15);
+  --fill-4:rgba(176,215,172,.28);
+  --hairline:rgba(176,215,172,.15);
+  --hairline-strong:rgba(176,215,172,.26);
+  --veil-1:rgba(6,19,5,.34);
+  --veil-2:rgba(6,19,5,.66);
+  --veil-3:rgba(6,19,5,.92);
+  --sig-fill:rgba(168,144,253,.18);
+  --sig-fill-2:rgba(168,144,253,.11);
+  --sig-line:rgba(168,144,253,.34);
+  --edge-hi:rgba(239,248,237,.10);
+
+  --glass-fill:linear-gradient(157deg,rgba(176,215,172,.09) 0%,rgba(19,43,16,.50) 38%,rgba(6,19,5,.72) 100%);
+  --panel-fill:linear-gradient(157deg,rgba(176,215,172,.05) 0%,rgba(19,43,16,.32) 42%,rgba(6,19,5,.40) 100%);
+  --specular:inset 0 1px 0 rgba(239,248,237,.12), inset 0 -1px 0 rgba(0,0,0,.26);
+  --lift:0 20px 44px -26px rgba(0,0,0,.92);
+  --sheet-fill:linear-gradient(170deg,rgba(31,69,28,.94),rgba(6,19,5,.97));
+  --alert-grad:linear-gradient(160deg,var(--s-400),var(--s-600));
+  --pile-sh-a:.5;
+  --sky-blend:screen; --sky-alpha:1; --star-alpha:.5;
+}
+[data-theme="light"]{
+  --canvas:#eff8ed; --canvas-2:#d7ebd4;
+  --text-primary:#061305;        /* 17.51:1 on canvas */
+  --text-secondary:#1f451c;      /* 10.03:1 */
+  --text-tertiary:#2c6027;       /*  6.88:1 */
+  --accent-text:#2c6027;         /*  6.88:1 */
+  --icon:#2c6027;
+  --text-on-action:#061305;      /*  8.59:1 on c-300 — unchanged */
+  --text-on-raised:#ffffff;      /* 10.90:1 on c-700 */
+  --text-on-alert:#ffffff;       /*  5.77:1 on s-600 */
+  --focus-ring:#2c6027;          /*  6.88:1 */
+  --pos:#2c6027;                 /*  6.88:1 */
+  --neg:#6c58ad;                 /*  5.31:1 — s-400 is only 2.39:1 here */
+  --pos-text:#1f451c;
+  --alert-surface:#6c58ad; --alert-ink:#ffffff;
+  --chart-line:#3c7d36;          /*  4.62:1 */
+  --gauge-1:#2c6027; --gauge-2:#589c51; --gauge-3:#84bc7d;
+  --bar-grad:linear-gradient(90deg,#2c6027,#589c51);
+
+  --fill-1:rgba(31,69,28,.045);
+  --fill-2:rgba(31,69,28,.075);
+  --fill-3:rgba(31,69,28,.11);
+  --fill-4:rgba(31,69,28,.22);
+  --hairline:rgba(31,69,28,.14);
+  --hairline-strong:rgba(31,69,28,.24);
+  --veil-1:rgba(239,248,237,.40);
+  --veil-2:rgba(239,248,237,.74);
+  --veil-3:rgba(239,248,237,.94);
+  --sig-fill:rgba(108,88,173,.13);
+  --sig-fill-2:rgba(108,88,173,.07);
+  --sig-line:rgba(108,88,173,.30);
+  --edge-hi:rgba(255,255,255,.9);
+
+  --glass-fill:linear-gradient(157deg,rgba(255,255,255,.86) 0%,rgba(255,255,255,.62) 46%,rgba(215,235,212,.52) 100%);
+  --panel-fill:linear-gradient(157deg,rgba(255,255,255,.72) 0%,rgba(255,255,255,.46) 50%,rgba(215,235,212,.34) 100%);
+  --specular:inset 0 1px 0 rgba(255,255,255,.9), inset 0 -1px 0 rgba(31,69,28,.05);
+  --lift:0 18px 38px -26px rgba(6,19,5,.28);
+  --sheet-fill:linear-gradient(170deg,rgba(255,255,255,.97),rgba(239,248,237,.98));
+  --alert-grad:linear-gradient(160deg,var(--s-600),var(--s-600));  /* white on s-600 = 5.77:1; s-400 would be 2.39:1 */
+  --pile-sh-a:.16;
+  --sky-blend:multiply; --sky-alpha:.34; --star-alpha:0;
+}
+/*THEME_END*/
+
+/* ============================================================
+   DEVICE SHELL — full bleed on a phone, framed on a desktop
+   ============================================================ */
+.stage{min-height:100dvh;display:grid;place-items:center;background:
+  radial-gradient(120% 90% at 50% -10%,var(--canvas-2) 0%,var(--canvas) 62%)}
+.phone{
+  position:relative;width:100%;max-width:430px;height:100dvh;
+  background:var(--canvas);overflow:hidden;isolation:isolate;
+}
+@media (min-width:900px){
+  .stage{padding:28px}
+  .phone{height:min(920px,calc(100dvh - 56px));border-radius:46px;
+    border:1px solid var(--fill-3);
+    box-shadow:0 60px 120px -50px rgba(0,0,0,.9), 0 0 0 10px var(--veil-2), inset 0 1px 0 var(--edge-hi)}
+}
+
+/* ---- THE SIGNATURE: a live aurora behind the glass -------- */
+.sky{position:absolute;inset:0 0 auto;height:58%;z-index:0;pointer-events:none;
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 52%,transparent 96%);
+  mask-image:linear-gradient(to bottom,#000 0%,#000 52%,transparent 96%);
+  transform:translate3d(0,var(--sky-y,0px),0);opacity:calc(var(--sky-o,1) * var(--sky-alpha));
+  transition:opacity .3s linear}
+.stars{position:absolute;inset:0;opacity:var(--star-alpha);
+  background-image:
+    radial-gradient(1px 1px at 12% 18%,#eff8ed99,transparent),
+    radial-gradient(1px 1px at 74% 12%,#d7ebd4aa,transparent),
+    radial-gradient(1px 1px at 42% 30%,#b0d7ac88,transparent),
+    radial-gradient(1.4px 1.4px at 88% 34%,#eff8ed77,transparent),
+    radial-gradient(1px 1px at 25% 46%,#a890fd88,transparent),
+    radial-gradient(1px 1px at 60% 40%,#d7ebd466,transparent),
+    radial-gradient(1px 1px at 92% 8%,#eff8ed66,transparent)}
+.band{position:absolute;left:-40%;width:180%;filter:blur(52px);mix-blend-mode:var(--sky-blend);will-change:transform}
+.band-1{top:-24%;height:74%;
+  background:conic-gradient(from 190deg at 42% 60%,transparent 0deg,var(--c-500) 42deg,var(--c-300) 74deg,var(--c-400) 106deg,transparent 152deg);
+  opacity:.62;animation:drift1 56s var(--ease) infinite alternate}
+.band-2{top:-6%;height:60%;
+  background:conic-gradient(from 340deg at 62% 44%,transparent 0deg,var(--c-600) 34deg,var(--c-400) 68deg,transparent 120deg);
+  opacity:.5;animation:drift2 72s var(--ease) infinite alternate}
+.band-3{top:-30%;height:46%;
+  background:linear-gradient(96deg,transparent 8%,var(--s-600) 34%,var(--s-400) 52%,transparent 78%);
+  opacity:.30;animation:drift3 50s var(--ease) infinite alternate}
+@keyframes drift1{0%{transform:translate3d(-4%,0,0) skewX(-5deg) scaleY(1)}100%{transform:translate3d(5%,2%,0) skewX(4deg) scaleY(1.06)}}
+@keyframes drift2{0%{transform:translate3d(4%,1%,0) skewX(6deg)}100%{transform:translate3d(-5%,-2%,0) skewX(-3deg)}}
+@keyframes drift3{0%{transform:translate3d(-6%,0,0) skewX(-7deg)}100%{transform:translate3d(5%,2%,0) skewX(5deg)}}
+@media (prefers-reduced-motion:reduce){
+  .band{animation:none!important}
+  *{animation-duration:.001ms!important;transition-duration:.001ms!important}
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.head{position:absolute;top:0;left:0;right:0;z-index:40;
+  padding:calc(env(safe-area-inset-top,0px) + 12px) 18px 12px;
+  display:flex;align-items:center;gap:12px;
+  background:linear-gradient(to bottom,var(--veil-2),rgba(6,19,5,0));
+  transition:background .28s var(--ease),box-shadow .28s var(--ease)}
+.head.is-stuck{background:var(--veil-2);backdrop-filter:blur(20px) saturate(115%);
+  -webkit-backdrop-filter:blur(20px) saturate(115%);box-shadow:0 1px 0 var(--hairline)}
+.avatar{width:38px;height:38px;border-radius:var(--r-pill);flex:none;
+  background:linear-gradient(150deg,var(--c-300),var(--c-600));color:var(--text-on-action);
+  display:grid;place-items:center;font-weight:700;font-size:13px;letter-spacing:.02em;
+  box-shadow:var(--specular)}
+.greet{flex:1;min-width:0}
+.greet b{display:block;font-size:14px;font-weight:600;letter-spacing:-.01em}
+.greet span{display:block;font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--text-tertiary)}
+.icon-btn{width:38px;height:38px;border-radius:var(--r-pill);flex:none;display:grid;place-items:center;
+  background:var(--fill-2);border:1px solid var(--hairline);position:relative;
+  transition:background .2s var(--ease),transform .2s var(--ease)}
+.icon-btn:active{transform:scale(.93);background:var(--fill-3)}
+.icon-btn .dot{position:absolute;top:8px;right:9px;width:7px;height:7px;border-radius:50%;
+  background:var(--s-400);box-shadow:0 0 0 2px var(--c-900)}
+
+/* ============================================================
+   SCROLL AREA + SCREENS
+   ============================================================ */
+.scroll{position:absolute;inset:0;z-index:10;overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;
+  padding:calc(env(safe-area-inset-top,0px) + 74px) 0 132px}
+.scroll::-webkit-scrollbar{display:none}
+.screen{display:none;padding:0 18px}
+.screen.is-on{display:block;animation:enter .34s var(--ease) both}
+@keyframes enter{from{opacity:0;transform:translate3d(0,10px,0)}to{opacity:1;transform:none}}
+.title{font-family:var(--f-display);font-size:26px;font-weight:700;letter-spacing:-.025em;margin:2px 0 2px}
+.sub{color:var(--text-secondary);font-size:13px;margin:0 0 18px}
+
+/* reveal on scroll */
+.rv{opacity:0;transform:translate3d(0,14px,0);transition:opacity .5s var(--ease),transform .55s var(--ease)}
+.rv.seen{opacity:1;transform:none}
+
+/* ============================================================
+   TAB BAR
+   ============================================================ */
+.tabbar{position:absolute;left:12px;right:12px;z-index:50;
+  bottom:calc(env(safe-area-inset-bottom,0px) + 12px);
+  display:grid;grid-template-columns:repeat(5,1fr);padding:7px;gap:2px;
+  border-radius:26px;border:1px solid var(--hairline);
+  background:linear-gradient(160deg,var(--fill-3),var(--veil-3));
+  backdrop-filter:blur(22px) saturate(118%);-webkit-backdrop-filter:blur(22px) saturate(118%);
+  box-shadow:var(--specular),0 22px 46px -22px #000}
+.tab{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:8px 2px 6px;border-radius:19px;color:var(--text-tertiary);
+  font-size:10px;font-weight:600;letter-spacing:.01em;
+  transition:color .22s var(--ease),transform .22s var(--ease)}
+.tab svg{width:21px;height:21px;stroke-width:1.7}
+.tab:active{transform:scale(.9)}
+.tab[aria-selected="true"]{color:var(--text-on-action)}
+.tab[aria-selected="true"]::before{content:"";position:absolute;inset:0;border-radius:19px;z-index:-1;
+  background:linear-gradient(160deg,var(--c-200),var(--c-300) 62%,var(--c-400));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 6px 18px -8px var(--c-400);
+  animation:pop .3s var(--ease-spring) both}
+@keyframes pop{from{transform:scale(.82);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* ============================================================
+   SURFACES
+   .glass = real backdrop-filter (used sparingly, phone GPU cost)
+   .panel = matched translucent fill, no filter
+   ============================================================ */
+.glass{background:var(--glass-fill);border:1px solid var(--hairline);border-radius:var(--r-md);
+  backdrop-filter:blur(20px) saturate(115%);-webkit-backdrop-filter:blur(20px) saturate(115%);
+  box-shadow:var(--specular),var(--lift)}
+.panel{background:var(--panel-fill);border:1px solid var(--hairline);border-radius:var(--r-md);
+  box-shadow:var(--specular)}
+.card{padding:16px;margin-bottom:14px;position:relative;overflow:hidden}
+.card-h{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.card-h h3{margin:0;font-size:14px;font-weight:600;letter-spacing:-.005em;flex:1}
+.eyebrow{font-family:var(--f-mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--text-tertiary)}
+.link{font-size:12px;font-weight:600;color:var(--accent-text)}
+.hr{height:1px;background:var(--hairline);margin:12px -16px;border:0}
+
+/* ---- Hero balance ---------------------------------------- */
+.hero{padding:22px 20px 18px;border-radius:var(--r-lg);margin-bottom:14px}
+.hero .amt{font-family:var(--f-display);font-weight:700;letter-spacing:-.045em;line-height:1;
+  font-size:clamp(40px,12.5vw,54px);font-variant-numeric:tabular-nums;
+  display:flex;align-items:baseline;gap:2px}
+.hero .cents{font-size:.52em;letter-spacing:-.02em;color:var(--text-secondary)}
+.hero .delta{display:inline-flex;align-items:center;gap:6px;margin-top:10px;
+  font-family:var(--f-mono);font-size:11.5px;padding:5px 10px;border-radius:var(--r-pill);
+  background:rgba(132,188,125,.16);border:1px solid rgba(132,188,125,.3);color:var(--pos-text)}
+.hero .delta.neg{background:var(--sig-fill);border-color:var(--sig-line);color:var(--text-primary)}
+
+/* ---- Quick actions --------------------------------------- */
+.qa{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.qa button{display:flex;flex-direction:column;align-items:center;gap:7px;padding:13px 4px 11px;
+  border-radius:var(--r-sm);background:var(--panel-fill);border:1px solid var(--hairline);
+  font-size:10.5px;font-weight:600;color:var(--text-secondary);
+  transition:transform .2s var(--ease),border-color .2s var(--ease)}
+.qa button:active{transform:scale(.94);border-color:var(--hairline-strong)}
+.qa svg{width:19px;height:19px;stroke:var(--icon);stroke-width:1.8}
+
+/* ---- Signal note (s-400) --------------------------------- */
+.note{display:flex;gap:11px;align-items:flex-start;padding:13px 14px;border-radius:var(--r-sm);
+  background:linear-gradient(150deg,var(--sig-fill),var(--sig-fill-2));
+  border:1px solid var(--sig-line);margin-bottom:14px}
+.note .spark-i{width:26px;height:26px;border-radius:9px;flex:none;display:grid;place-items:center;
+  background:var(--alert-surface);color:var(--alert-ink)}
+.note p{margin:0;font-size:12.5px;line-height:1.5;color:var(--text-primary);opacity:.9}
+.note b{font-weight:700;opacity:1}
+
+/* ---- Segmented control ----------------------------------- */
+.segwrap{position:sticky;top:calc(env(safe-area-inset-top,0px) + 62px);z-index:30;
+  margin:0 -18px 14px;padding:8px 18px 10px;
+  background:linear-gradient(to bottom,var(--veil-3) 62%,rgba(6,19,5,0))}
+.seg{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.seg::-webkit-scrollbar{display:none}
+.seg button{flex:none;padding:8px 14px;border-radius:var(--r-pill);font-size:12.5px;font-weight:600;
+  color:var(--text-tertiary);background:var(--fill-1);border:1px solid transparent;
+  transition:all .22s var(--ease)}
+.seg button[aria-selected="true"]{background:var(--c-700);border-color:var(--hairline-strong);
+  color:var(--text-on-raised)}
+
+/* ---- Chips ----------------------------------------------- */
+.chips{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:7px 13px;border-radius:var(--r-pill);font-size:12px;font-weight:600;
+  background:var(--fill-1);border:1px solid var(--hairline);color:var(--text-secondary);
+  transition:all .2s var(--ease)}
+.chip[aria-pressed="true"]{background:var(--c-300);border-color:var(--c-200);color:var(--text-on-action)}
+
+/* ---- List rows ------------------------------------------- */
+.rows{display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:12px;padding:11px 0;text-align:left;width:100%;
+  border-bottom:1px solid var(--fill-2);transition:opacity .18s var(--ease)}
+.row:last-child{border-bottom:0}
+.row:active{opacity:.6}
+.ricon{width:38px;height:38px;border-radius:12px;flex:none;display:grid;place-items:center;
+  background:var(--fill-2);border:1px solid var(--hairline);
+  font-family:var(--f-display);font-weight:600;font-size:14px;color:var(--text-secondary)}
+.ricon svg{width:18px;height:18px;stroke:var(--icon);stroke-width:1.8}
+.rmain{flex:1;min-width:0}
+.rmain b{display:block;font-size:13.5px;font-weight:600;letter-spacing:-.005em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rmain span{display:block;font-size:11.5px;color:var(--text-tertiary);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ramt{text-align:right;flex:none}
+.ramt b{display:block;font-family:var(--f-mono);font-size:13px;font-weight:500;
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.ramt span{display:block;font-family:var(--f-mono);font-size:11px;color:var(--text-tertiary)}
+.up{color:var(--pos)!important}
+.down{color:var(--neg)!important}  /* 7.30:1 on c-900 */
+.day{font-family:var(--f-mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--text-tertiary);padding:16px 0 4px}
+
+/* ---- Bars, rings, gauge ---------------------------------- */
+.bar{height:7px;border-radius:var(--r-pill);background:var(--fill-3);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:var(--r-pill);
+  background:var(--bar-grad);width:0;
+  transition:width 1s var(--ease)}
+.bar.alt i{background:linear-gradient(90deg,var(--s-600),var(--s-400))}
+.catrow{display:grid;grid-template-columns:1fr auto;gap:4px 10px;margin-bottom:13px}
+.catrow .n{font-size:12.5px;font-weight:600}
+.catrow .v{font-family:var(--f-mono);font-size:12px;color:var(--text-secondary);
+  font-variant-numeric:tabular-nums}
+.catrow .bar{grid-column:1/-1}
+.gauge{display:block;margin:0 auto}
+.gauge .track{stroke:var(--fill-3)}
+.gauge .fill{stroke:url(#gg);stroke-linecap:round;transition:stroke-dashoffset 1.3s var(--ease)}
+.gnum{font-family:var(--f-display);font-size:44px;font-weight:700;letter-spacing:-.04em;
+  text-align:center;line-height:1;font-variant-numeric:tabular-nums}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{padding:12px;border-radius:var(--r-sm);background:var(--fill-1);
+  border:1px solid var(--hairline)}
+.stat .k{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--text-tertiary);display:block;margin-bottom:5px}
+.stat .v{font-family:var(--f-display);font-size:17px;font-weight:600;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums}
+
+/* ---- Virtual card art ------------------------------------ */
+.cardart{position:relative;aspect-ratio:1.586;border-radius:22px;padding:18px;overflow:hidden;
+  background:linear-gradient(146deg,var(--c-500) 0%,var(--c-700) 46%,var(--c-900) 100%);
+  border:1px solid rgba(176,215,172,.28);
+  box-shadow:inset 0 1px 0 rgba(239,248,237,.28),0 26px 50px -28px #000;
+  display:flex;flex-direction:column;justify-content:space-between;
+  transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transform-style:preserve-3d;
+  transition:transform .75s var(--ease)}
+.cardart::after{content:"";position:absolute;inset:-40%;pointer-events:none;
+  background:linear-gradient(104deg,transparent 38%,rgba(239,248,237,.16) 47%,rgba(168,144,253,.10) 52%,transparent 61%);
+  transform:translateX(var(--sheen,-30%));transition:transform .75s var(--ease)}
+.cardart.tone-spend{background:linear-gradient(146deg,#3c7d36 0%,#1f451c 46%,#061305 100%)}
+.cardart.tone-build{background:linear-gradient(146deg,#6c58ad 0%,#1f451c 52%,#061305 100%)}
+.cardart.tone-grow{background:linear-gradient(146deg,#589c51 0%,#2c6027 48%,#132b10 100%)}
+.cardart.frozen{filter:saturate(.35) brightness(.8)}
+.cardart .brand{font-family:var(--f-display);font-size:16px;font-weight:700;letter-spacing:-.02em}
+.cardart .pan{font-family:var(--f-mono);font-size:16px;letter-spacing:.14em;
+  display:flex;gap:10px;flex-wrap:wrap}
+.cardart .meta{display:flex;gap:20px;align-items:flex-end}
+.cardart .meta span{font-family:var(--f-mono);font-size:9px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--c-200);display:block}
+.cardart .meta b{font-family:var(--f-mono);font-size:12.5px;font-weight:500}
+.chipart{width:34px;height:25px;border-radius:6px;
+  background:linear-gradient(135deg,#d7ebd4,#84bc7d 52%,#3c7d36);
+  box-shadow:inset 0 0 0 1px rgba(6,19,5,.3)}
+.frozen-tag{position:absolute;inset:0;display:grid;place-items:center;
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+  background:rgba(6,19,5,.55);color:var(--c-100)}
+
+/* ---- Toggle ---------------------------------------------- */
+.tog{display:flex;align-items:center;gap:12px;padding:12px 0;width:100%;text-align:left;
+  border-bottom:1px solid var(--fill-2)}
+.tog:last-child{border-bottom:0}
+.tog .tmain{flex:1}
+.tog .tmain b{display:block;font-size:13.5px;font-weight:600}
+.tog .tmain span{display:block;font-size:11.5px;color:var(--text-tertiary);line-height:1.4}
+.sw{width:46px;height:27px;border-radius:var(--r-pill);flex:none;position:relative;
+  background:var(--fill-3);border:1px solid var(--hairline);transition:background .26s var(--ease)}
+.sw i{position:absolute;top:2px;left:2px;width:21px;height:21px;border-radius:50%;
+  background:var(--text-on-raised);transition:transform .3s var(--ease-spring),background .26s var(--ease)}
+.tog[aria-pressed="true"] .sw{background:var(--c-300);border-color:var(--accent-text)}
+.tog[aria-pressed="true"] .sw i{transform:translateX(19px);background:var(--c-900)}
+
+/* ---- Buttons --------------------------------------------- */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  padding:14px;border-radius:var(--r-sm);font-size:14px;font-weight:700;letter-spacing:-.01em;
+  background:linear-gradient(160deg,var(--c-200),var(--c-300) 60%,var(--c-400));
+  color:var(--text-on-action);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 12px 26px -14px var(--c-400);
+  transition:transform .2s var(--ease)}
+.btn:active{transform:scale(.975)}
+.btn.ghost{background:var(--fill-2);border:1px solid var(--hairline);
+  color:var(--text-primary);box-shadow:none}
+.btn.alert{background:var(--alert-grad);
+  color:var(--text-on-alert);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 12px 26px -14px var(--s-600)}
+.btn2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ---- Sparkline ------------------------------------------- */
+.spark{width:100%;height:120px;display:block;overflow:visible}
+.spark path.ln{fill:none;stroke:var(--chart-line);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:1400;stroke-dashoffset:1400;animation:draw 1.1s var(--ease) forwards}
+.spark path.ln.neg{stroke:var(--neg)}
+.spark path.ar{fill:url(#ag);opacity:0;animation:fade .8s .35s var(--ease) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes fade{to{opacity:1}}
+.ranges{display:flex;gap:6px;justify-content:space-between;margin-top:12px}
+.ranges button{flex:1;padding:7px 0;border-radius:10px;font-family:var(--f-mono);font-size:11px;
+  color:var(--text-tertiary);transition:all .2s var(--ease)}
+.ranges button[aria-selected="true"]{background:var(--fill-3);color:var(--c-100)}
+
+/* ---- Grid tiles ------------------------------------------ */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{padding:14px;border-radius:var(--r-sm);text-align:left;
+  background:var(--panel-fill);border:1px solid var(--hairline);
+  transition:transform .2s var(--ease),border-color .2s var(--ease)}
+.tile:active{transform:scale(.97);border-color:var(--hairline-strong)}
+.tile svg{width:20px;height:20px;stroke:var(--icon);stroke-width:1.8;margin-bottom:9px}
+.tile b{display:block;font-size:13px;font-weight:600;margin-bottom:3px}
+.tile span{display:block;font-size:11px;color:var(--text-tertiary);line-height:1.4}
+
+/* ---- Goals ----------------------------------------------- */
+.goal{padding:15px;border-radius:var(--r-sm);background:var(--panel-fill);
+  border:1px solid var(--hairline);margin-bottom:10px}
+.goal .top{display:flex;align-items:center;gap:11px;margin-bottom:11px}
+.goal .emo{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-size:17px;
+  background:var(--fill-2);border:1px solid var(--hairline)}
+.goal .top b{flex:1;font-size:13.5px;font-weight:600}
+.goal .top .pc{font-family:var(--f-mono);font-size:12px;color:var(--accent-text)}
+.goal .fig{display:flex;justify-content:space-between;margin-top:8px;
+  font-family:var(--f-mono);font-size:11px;color:var(--text-tertiary)}
+
+/* ---- Bottom sheet ---------------------------------------- */
+.scrim{position:absolute;inset:0;z-index:60;background:rgba(6,19,5,.58);  /* scrim stays dark in both modes */
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  opacity:0;pointer-events:none;transition:opacity .3s var(--ease)}
+.scrim.is-on{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:70;max-height:86%;overflow-y:auto;
+  scrollbar-width:none;padding:10px 18px calc(env(safe-area-inset-bottom,0px) + 24px);
+  border-radius:var(--r-lg) var(--r-lg) 0 0;border:1px solid var(--hairline);border-bottom:0;
+  background:var(--sheet-fill);
+  backdrop-filter:blur(24px) saturate(118%);-webkit-backdrop-filter:blur(24px) saturate(118%);
+  box-shadow:var(--specular),0 -24px 60px -20px #000;
+  transform:translate3d(0,102%,0);transition:transform .4s var(--ease-spring)}
+.sheet::-webkit-scrollbar{display:none}
+.sheet.is-on{transform:none}
+.grab{width:38px;height:4px;border-radius:var(--r-pill);background:var(--fill-4);
+  margin:0 auto 14px}
+
+/* ---- Ask Aurora ------------------------------------------ */
+.chat{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.msg{max-width:86%;padding:11px 14px;border-radius:18px;font-size:13px;line-height:1.5}
+.msg.me{align-self:flex-end;background:linear-gradient(160deg,var(--c-200),var(--c-300));
+  color:var(--text-on-action);border-bottom-right-radius:6px;font-weight:500}
+.msg.ai{align-self:flex-start;background:var(--fill-2);border:1px solid var(--hairline);
+  color:var(--text-primary);border-bottom-left-radius:6px}
+.msg.ai b{color:var(--accent-text)}
+.msg.ai .kv{font-family:var(--f-mono);font-size:12px;color:var(--text-primary)}
+.ask{display:flex;gap:9px;align-items:center;padding:7px 7px 7px 15px;border-radius:var(--r-pill);
+  background:var(--fill-1);border:1px solid var(--hairline)}
+.ask input{flex:1;min-width:0;background:none;border:0;outline:none;font-size:13.5px}
+.ask input::placeholder{color:var(--text-tertiary)}
+.ask .go{width:36px;height:36px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:var(--c-300);color:var(--text-on-action)}
+.typing span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--accent-text);
+  margin-right:3px;animation:blink 1.1s infinite}
+.typing span:nth-child(2){animation-delay:.16s}
+.typing span:nth-child(3){animation-delay:.32s}
+@keyframes blink{0%,60%,100%{opacity:.28;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+
+/* ---- Toast ----------------------------------------------- */
+.toast{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 96px);z-index:90;
+  transform:translate(-50%,16px);opacity:0;pointer-events:none;
+  padding:11px 17px;border-radius:var(--r-pill);font-size:12.5px;font-weight:600;
+  background:var(--veil-3);border:1px solid var(--hairline-strong);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);white-space:nowrap;
+  transition:opacity .28s var(--ease),transform .28s var(--ease-spring)}
+.toast.is-on{opacity:1;transform:translate(-50%,0)}
+
+
+/* ============================================================
+   CASCADING CARD STACK — wallet-style, tap a back card to pull
+   it forward. Transforms are driven by --i so the reorder
+   animates in place instead of re-rendering.
+   ============================================================ */
+.stack{position:relative;height:0;padding-bottom:calc(63.05% + 92px);margin-bottom:16px}
+.slot{position:absolute;left:0;right:0;top:0;aspect-ratio:1.586;
+  transform-origin:50% 0;
+  transform:translate3d(0,calc(var(--i,0) * 46px),0) scale(calc(1 - var(--i,0) * .05));
+  filter:brightness(calc(1 - var(--i,0) * .14));
+  transition:transform .58s var(--ease-spring),filter .45s var(--ease);
+  cursor:pointer}
+.slot.is-front{cursor:default}
+.slot .cardart{width:100%;height:100%;position:absolute;inset:0}
+.stack-legend{display:flex;gap:6px;justify-content:center;margin:-4px 0 16px}
+.stack-legend button{width:7px;height:7px;border-radius:50%;background:var(--fill-4);
+  transition:background .3s var(--ease),transform .3s var(--ease)}
+.stack-legend button[aria-current="true"]{background:var(--accent-text);transform:scale(1.3)}
+
+/* ============================================================
+   TICKER TAPE — ported from the earlier Aurora build.
+   The run holds the feed twice and travels -50%, so the loop
+   is seamless. .slow is his second speed (52s vs 34s).
+   ============================================================ */
+.tape{position:relative;overflow:hidden;border-radius:16px;padding:9px 0;margin:2px 0 14px;
+  background:var(--fill-1);border:1px solid var(--hairline);
+  backdrop-filter:blur(20px) saturate(115%);-webkit-backdrop-filter:blur(20px) saturate(115%);
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent)}
+.tape-run{display:flex;width:max-content;animation:tape 34s linear infinite}
+.tape:hover .tape-run,.tape:active .tape-run{animation-play-state:paused}
+.tape.slow .tape-run{animation-duration:52s}
+@keyframes tape{to{transform:translate3d(-50%,0,0)}}
+.tick{display:flex;align-items:baseline;gap:7px;padding:0 15px;white-space:nowrap;
+  border-right:1px solid var(--hairline)}
+.tick b{font-family:var(--f-mono);font-size:12px;font-weight:500;letter-spacing:.04em;
+  color:var(--text-primary)}
+.tick i{font-style:normal;font-family:var(--f-mono);font-size:11.5px;color:var(--text-secondary);
+  font-variant-numeric:tabular-nums}
+.tick em{font-style:normal;font-family:var(--f-mono);font-size:11px;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){
+  .tape{overflow-x:auto;scrollbar-width:none}
+  .tape::-webkit-scrollbar{display:none}
+  .tape-run{animation:none!important;transform:none!important}
+}
+
+/* ============================================================
+   HORIZONTAL SNAP RAIL — "Your accounts", ported
+   ============================================================ */
+.rail{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;
+  padding:2px 18px 8px;margin:0 -18px 6px;scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+.rail-card{scroll-snap-align:start;flex:0 0 172px;padding:16px;border-radius:20px;text-align:left;
+  background:var(--panel-fill);border:1px solid var(--hairline);box-shadow:var(--specular);
+  transition:transform .2s var(--ease),border-color .2s var(--ease)}
+.rail-card:active{transform:scale(.97);border-color:var(--hairline-strong)}
+.rail-card .ic{display:block;margin-bottom:10px}
+.rail-card .ic svg{width:18px;height:18px;stroke:var(--icon);stroke-width:1.8}
+.rail-card b{display:block;font-size:13px;font-weight:600}
+.rail-card .amt{font-family:var(--f-mono);font-size:16px;margin-top:5px;
+  font-variant-numeric:tabular-nums;display:block}
+.rail-card .sub{font-size:11px;color:var(--text-tertiary);display:block;margin-top:3px}
+
+/* ============================================================
+   CASCADING CARDS — the pile. Each card sticks, then scales,
+   lifts, rounds and shades as the next settles onto it.
+   His geometry: PILE_TOP + i*PEEK, smoothstep, scale 1-.085e.
+   ============================================================ */
+.pile{position:relative;margin-top:4px}
+.pile-item{position:sticky;will-change:transform;margin-bottom:18px}
+.pile-item:last-child{margin-bottom:0}
+.pile-card{position:relative;overflow:hidden;border-radius:26px;padding:18px;
+  background:var(--glass-fill);border:1px solid var(--hairline);
+  backdrop-filter:blur(20px) saturate(115%);-webkit-backdrop-filter:blur(20px) saturate(115%);
+  transform-origin:50% 0}
+.pile-card::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(150deg,var(--fill-2),transparent 46%)}
+.pile-card::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:var(--shade,0);
+  background:linear-gradient(180deg,var(--veil-2),var(--veil-1));transition:opacity .1s linear}
+.pile-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}
+.pile-hd h3{font-family:var(--f-display);font-weight:700;font-size:17px;letter-spacing:-.025em;margin:0}
+.pile-hd .go{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--accent-text);padding:4px}
+.pile-figure{font-family:var(--f-display);font-weight:700;font-size:30px;letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums;line-height:1;margin:0 0 6px}
+.pile-note{margin:0;font-size:12px;color:var(--text-secondary)}
+
+/* ============================================================
+   LONG SCROLL — sectioned market page with sticky sub-heads
+   and a depth rail under the app header
+   ============================================================ */
+.progress{position:absolute;left:0;right:0;z-index:39;height:2px;background:transparent;
+  top:calc(env(safe-area-inset-top,0px) + 62px);opacity:0;transition:opacity .3s var(--ease)}
+.progress.is-on{opacity:1}
+.progress i{display:block;height:100%;width:0;background:var(--bar-grad);
+  box-shadow:0 0 10px var(--chart-line);
+  border-radius:0 var(--r-pill) var(--r-pill) 0}
+.sect{margin-bottom:26px}
+.sect-h{position:sticky;z-index:25;margin:0 -18px 12px;padding:9px 18px 9px;
+  top:calc(env(safe-area-inset-top,0px) + 62px);
+  background:var(--veil-3);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  display:flex;align-items:baseline;gap:9px;border-bottom:1px solid var(--hairline)}
+.sect-h h3{margin:0;font-family:var(--f-display);font-size:17px;font-weight:700;
+  letter-spacing:-.025em;flex:1}
+.sect-h .n{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--text-tertiary)}
+.sect > p.lede{margin:0 0 12px;font-size:12.5px;color:var(--text-secondary);line-height:1.5}
+.mover{display:grid;grid-template-columns:1fr auto;gap:3px 10px;padding:11px 0;
+  border-bottom:1px solid var(--fill-2);text-align:left;width:100%}
+.mover:last-child{border-bottom:0}
+.mover b{font-size:13.5px;font-weight:600}
+.mover .t{font-family:var(--f-mono);font-size:11px;color:var(--text-tertiary)}
+.mover .d{font-family:var(--f-mono);font-size:14px;font-variant-numeric:tabular-nums;
+  align-self:center;grid-row:1/3}
+.sectorbar{display:grid;grid-template-columns:76px 1fr 52px;align-items:center;gap:10px;
+  margin-bottom:11px}
+.sectorbar .n{font-size:12.5px;font-weight:600}
+.sectorbar .v{font-family:var(--f-mono);font-size:11.5px;text-align:right;
+  font-variant-numeric:tabular-nums}
+.sectorbar .rail{height:6px;border-radius:var(--r-pill);background:var(--fill-2);
+  position:relative;overflow:hidden}
+.sectorbar .rail i{position:absolute;top:0;bottom:0;left:50%;width:0;
+  transition:width .9s var(--ease),left .9s var(--ease)}
+.sectorbar .rail i.pos{background:var(--bar-grad)}
+.sectorbar .rail i.neg{background:linear-gradient(90deg,var(--s-600),var(--s-400))}
+.endcap{text-align:center;padding:8px 0 4px;font-family:var(--f-mono);font-size:10px;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--text-tertiary)}
+
+/* ---- Keypad ---------------------------------------------- */
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.pad button{padding:15px 0;border-radius:var(--r-sm);font-family:var(--f-display);font-size:21px;
+  font-weight:600;background:var(--fill-1);border:1px solid var(--hairline);
+  transition:transform .15s var(--ease),background .15s var(--ease)}
+.pad button:active{transform:scale(.93);background:var(--fill-3)}
+.padamt{font-family:var(--f-display);font-size:clamp(38px,11vw,48px);font-weight:700;
+  letter-spacing:-.04em;text-align:center;font-variant-numeric:tabular-nums;padding:10px 0 4px}
+.people{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+.people::-webkit-scrollbar{display:none}
+.person{flex:none;width:60px;text-align:center}
+.person .av{width:52px;height:52px;border-radius:50%;margin:0 auto 6px;display:grid;place-items:center;
+  font-family:var(--f-display);font-weight:600;font-size:16px;color:var(--text-on-raised);
+  background:linear-gradient(150deg,var(--c-600),var(--c-800));border:1px solid var(--hairline);
+  transition:transform .2s var(--ease),border-color .2s var(--ease)}
+.person[aria-pressed="true"] .av{border-color:var(--c-300);transform:scale(1.06);
+  box-shadow:0 0 0 2px rgba(132,188,125,.35)}
+.person span{font-size:10.5px;color:var(--text-tertiary);display:block;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.empty{text-align:center;padding:34px 20px;color:var(--text-tertiary);font-size:13px}
+.empty b{display:block;color:var(--text-primary);font-size:14px;margin-bottom:5px}
+
+/* ---- icon sizing per context (a <use> has no intrinsic size) ---- */
+.phone svg{fill:none}
+.btn svg{width:17px;height:17px;stroke:currentColor;stroke-width:1.9;flex:none}
+.icon-btn svg{width:18px;height:18px;stroke:currentColor;stroke-width:1.8}
+.ask > svg{width:17px;height:17px;stroke:var(--icon);stroke-width:1.9;flex:none}
+.go svg{width:16px;height:16px;stroke:currentColor;stroke-width:2}
+.spark-i svg{width:15px;height:15px;stroke:currentColor;stroke-width:2}
+.gauge path{fill:none}
+
+/* ---- balance figures settle in on render ---- */
+@keyframes amtIn{from{opacity:0;transform:translate3d(0,8px,0);filter:blur(5px)}
+  to{opacity:1;transform:none;filter:none}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<linearGradient id="gg" x1="0" y1="0" x2="1" y2="0">
+  <stop offset="0%" stop-color="var(--gauge-1)"/><stop offset="55%" stop-color="var(--gauge-2)"/><stop offset="100%" stop-color="var(--gauge-3)"/>
+</linearGradient>
+<linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0%" stop-color="var(--chart-line)" stop-opacity=".30"/><stop offset="100%" stop-color="var(--chart-line)" stop-opacity="0"/>
+</linearGradient>
+<g id="i-home" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.2 12 3l9 7.2V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></g>
+<g id="i-chart" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16"/><path d="M8 15l3.5-4.5L15 14l4-6"/></g>
+<g id="i-move" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h12l-3-3M17 17H5l3 3"/></g>
+<g id="i-compass" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></g>
+<g id="i-help" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.4 2.3c-.6.3-.9.8-.9 1.4v.3"/><path d="M12 17h.01"/></g>
+<g id="i-plus" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></g>
+<g id="i-send" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10.5 13.5M21 3l-6.8 18-3.7-7.5L3 9.8z"/></g>
+<g id="i-bill" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9.5 8h5M9.5 12h5"/></g>
+<g id="i-deposit" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11m0 0 4-4m-4 4-4-4"/><path d="M4 17v3h16v-3"/></g>
+<g id="i-bell" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 19a2 2 0 0 0 4 0"/></g>
+<g id="i-lock" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10" width="15" height="10" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></g>
+<g id="i-eye" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12"/><circle cx="12" cy="12" r="3"/></g>
+<g id="i-shield" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.5 3v6c0 4.5-3 7.8-7.5 9-4.5-1.2-7.5-4.5-7.5-9V6z"/><path d="m9 12 2 2 4-4"/></g>
+<g id="i-star" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3.8 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 10l5.9-.9z"/></g>
+<g id="i-search" fill="none" stroke="currentColor" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></g>
+<g id="i-leaf" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-8 5-13 15-14 0 10-5 15-12 15-1.5 0-3-.4-3-1"/><path d="M8 16c2-4 5-6.5 9-8"/></g>
+<g id="i-coin" fill="none" stroke="currentColor" stroke-linecap="round"><ellipse cx="12" cy="7" rx="7.5" ry="3.2"/><path d="M4.5 7v10c0 1.8 3.4 3.2 7.5 3.2s7.5-1.4 7.5-3.2V7"/><path d="M4.5 12c0 1.8 3.4 3.2 7.5 3.2s7.5-1.4 7.5-3.2"/></g>
+<g id="i-clock" fill="none" stroke="currentColor" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></g>
+<g id="i-sun" fill="none" stroke="currentColor" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/></g>
+<g id="i-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.4 8.4 0 1 0 10.2 10.2"/></g>
+<g id="i-bolt" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 13.5h6L10.5 21l8-10.5h-6z"/></g>
+</defs></svg>
+
+<div class="stage">
+<main class="phone" id="phone">
+
+  <div class="sky" id="sky">
+    <div class="band band-1"></div><div class="band band-2"></div><div class="band band-3"></div>
+    <div class="stars"></div>
+  </div>
+
+  <header class="head" id="head">
+    <div class="avatar">SO</div>
+    <div class="greet"><b id="greetName">Stephen</b><span id="greetTime">Aurora · Grande Prairie</span></div>
+    <button class="icon-btn" id="btnTheme" aria-label="Switch to light mode"></button>
+    <button class="icon-btn" id="btnAlerts" aria-label="Notifications">
+      <svg width="18" height="18" viewBox="0 0 24 24" style="color:var(--c-200)"><use href="#i-bell"/></svg>
+      <i class="dot"></i>
+    </button>
+  </header>
+
+  <div class="scroll" id="scroll">
+
+    <section class="screen is-on" id="s-home" role="tabpanel" aria-label="Home">
+      <div id="homeTape"></div>
+      <div class="segwrap">
+        <div class="seg" id="seg" role="tablist" aria-label="Home sections"></div>
+      </div>
+      <div id="homeBody"></div>
+    </section>
+
+    <section class="screen" id="s-invest" role="tabpanel" aria-label="Invest"></section>
+    <section class="screen" id="s-move" role="tabpanel" aria-label="Move money"></section>
+    <section class="screen" id="s-discover" role="tabpanel" aria-label="Discover"></section>
+    <section class="screen" id="s-help" role="tabpanel" aria-label="Ask Aurora"></section>
+
+  </div>
+
+  <nav class="tabbar" id="tabbar" role="tablist" aria-label="Main"></nav>
+
+  <div class="progress" id="progress" aria-hidden="true"><i></i></div>
+  <div class="scrim" id="scrim"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Details">
+    <div class="grab"></div><div id="sheetBody"></div>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+</main>
+</div>
+
+<script>
+/* ============================================================
+   1. DATA — everything the app and the assistant read from
+   ============================================================ */
+const DB = {
+  user:{ first:'Stephen', initials:'SO', city:'Grande Prairie' },
+  cardName:'STEPHEN OMITOKI',
+  cardSettings:{ tap:true, online:true, atm:false, cushion:200, payday:2 },
+  cards:[
+    {id:'spend', label:'Spend',          kind:'Virtual debit',      tone:'spend', frozen:false,
+     pan:['4021','8836','2274','4182'], exp:'09/29', cvv:'318'},
+    {id:'build', label:'Credit Builder', kind:'Secured Mastercard', tone:'build', frozen:false,
+     pan:['5388','1104','6620','9057'], exp:'03/28', cvv:'742'},
+    {id:'grow',  label:'Grow',           kind:'Savings access',     tone:'grow',  frozen:true,
+     pan:['4021','8836','5519','7734'], exp:'11/29', cvv:'206'}
+  ],
+  sectors:[
+    {n:'Energy',n2:'Energy',d:1.42},{n:'Technology',d:1.96},{n:'Financials',d:0.38},
+    {n:'Utilities',d:0.12},{n:'Materials',d:-0.44},{n:'Health care',d:-0.81}
+  ],
+  accounts:[
+    {id:'spend', icon:'i-coin',   name:'Spend',          sub:'Chequing ·· 4182',       bal:2481.36},
+    {id:'grow',  icon:'i-leaf',   name:'Grow',           sub:'Savings · 4.10% APY',    bal:9204.88},
+    {id:'inv',   icon:'i-chart',  name:'Invest',         sub:'TFSA · self-directed',   bal:0},
+    {id:'build', icon:'i-shield', name:'Credit Builder', sub:'$180 of $500 used',      bal:-180.00}
+  ],
+  cash: 4233.89,
+  holdings:[
+    {t:'VFV.TO',  n:'Vanguard S&P 500',      q:18,     p:142.80,   d:1.24},
+    {t:'XEQT.TO', n:'iShares All-Equity',    q:42,     p:34.06,    d:0.62},
+    {t:'ENB.TO',  n:'Enbridge',              q:30,     p:59.12,    d:0.41},
+    {t:'SHOP.TO', n:'Shopify',               q:6,      p:118.44,   d:-0.87},
+    {t:'CASH.TO', n:'High Interest Savings', q:55,     p:50.11,    d:0.02},
+    {t:'BTC',     n:'Bitcoin',               q:0.0142, p:88410.00, d:2.31}
+  ],
+  automation:[
+    {id:'roundup',  on:true,  b:'Round-ups',        s:'Spare change from every purchase goes to Grow'},
+    {id:'weekly',   on:true,  b:'Auto-invest',      s:'$50 into XEQT.TO every Friday'},
+    {id:'drip',     on:false, b:'Reinvest dividends', s:'Buy more of whatever paid you'},
+    {id:'sweep',    on:true,  b:'Payday sweep',     s:'20% of each deposit moves to Grow'}
+  ],
+  tx:[
+    {d:'Today',     m:'Tim Hortons',        c:'Food & drink',   a:-4.85,    i:'TH'},
+    {d:'Today',     m:'Petro-Canada',       c:'Gas',            a:-71.20,   i:'PC'},
+    {d:'Today',     m:'Round-up to Grow',   c:'Transfer',       a:-2.40,    i:'AU'},
+    {d:'Yesterday', m:'Save-On-Foods',      c:'Groceries',      a:-86.42,   i:'SO'},
+    {d:'Yesterday', m:'Netflix',            c:'Subscriptions',  a:-20.99,   i:'NF'},
+    {d:'Yesterday', m:'e-Transfer from Dami',c:'Income',        a:120.00,   i:'DM'},
+    {d:'Jul 23',    m:'Payroll · Skechers', c:'Income',         a:1842.55,  i:'SK'},
+    {d:'Jul 23',    m:'Telus',              c:'Bills',          a:-95.00,   i:'TL'},
+    {d:'Jul 23',    m:'Shoppers Drug Mart', c:'Health',         a:-23.11,   i:'SD'},
+    {d:'Jul 22',    m:'Amazon.ca',          c:'Shopping',       a:-38.79,   i:'AZ'},
+    {d:'Jul 22',    m:'GP Transit',         c:'Transport',      a:-2.75,    i:'GP'},
+    {d:'Jul 21',    m:'Rent · Crystal Ridge',c:'Housing',       a:-1150.00, i:'CR'},
+    {d:'Jul 21',    m:'Spotify',            c:'Subscriptions',  a:-11.99,   i:'SP'}
+  ],
+  spend:{ month:'July', total:1265.54, budget:1900, last:1418.90,
+    cats:[ {n:'Groceries',v:412.88}, {n:'Bills',v:268.14}, {n:'Food & drink',v:186.30},
+           {n:'Gas',v:154.60}, {n:'Shopping',v:132.45}, {n:'Subscriptions',v:62.97},
+           {n:'Health',v:48.20} ] },
+  bills:[
+    {n:'Rent · Crystal Ridge', due:'Aug 1', a:1150.00},
+    {n:'Telus',                due:'Aug 3', a:95.00},
+    {n:'Spotify',              due:'Aug 4', a:11.99}
+  ],
+  credit:{ score:726, delta:8, band:'Good',
+    hist:[692,701,706,714,718,726],
+    factors:[ {n:'Payment history',v:'100% on time',pc:100,good:true},
+              {n:'Credit used',    v:'36% of $500',  pc:36, good:true},
+              {n:'Age of credit',  v:'2 yr 4 mo',    pc:42, good:false},
+              {n:'Hard checks',    v:'1 in 12 months',pc:20,good:true} ] },
+  goals:[
+    {e:'🛟', n:'Emergency fund', now:3200, tgt:6000},
+    {e:'💻', n:'New laptop',     now:740,  tgt:1800},
+    {e:'❄️', n:'Winter tires',   now:290,  tgt:1200}
+  ],
+  people:[
+    {n:'Dami', i:'DM'}, {n:'Tolu', i:'TL'}, {n:'Mom', i:'MO'},
+    {n:'Kene', i:'KN'}, {n:'Rent', i:'CR'}, {n:'Sam', i:'SM'}
+  ],
+  moves:[
+    {n:'Dami', s:'Interac e-Transfer · sent', a:-45.00},
+    {n:'Grow', s:'Round-ups · this week',     a:12.80},
+    {n:'Tolu', s:'Interac e-Transfer · received', a:60.00}
+  ],
+  discover:{
+    Stocks:[ {t:'SHOP.TO',n:'Shopify',p:118.44,d:-0.87}, {t:'RY.TO',n:'Royal Bank',p:169.22,d:0.44},
+             {t:'CNQ.TO',n:'Canadian Natural',p:47.90,d:1.12}, {t:'NVDA',n:'NVIDIA',p:184.06,d:2.08},
+             {t:'AAPL',n:'Apple',p:241.19,d:0.31}, {t:'BCE.TO',n:'BCE',p:32.55,d:-1.44} ],
+    ETFs:[ {t:'XEQT.TO',n:'iShares All-Equity',p:34.06,d:0.62}, {t:'VFV.TO',n:'Vanguard S&P 500',p:142.80,d:1.24},
+           {t:'XIC.TO',n:'iShares Core S&P/TSX',p:41.77,d:0.38}, {t:'CASH.TO',n:'High Interest Savings',p:50.11,d:0.02} ],
+    Crypto:[ {t:'BTC',n:'Bitcoin',p:88410.00,d:2.31}, {t:'ETH',n:'Ethereum',p:4120.55,d:1.66},
+             {t:'SOL',n:'Solana',p:214.30,d:-2.90} ],
+    IPOs:[ {t:'NRTH',n:'Northlight Energy',p:19.00,d:0,note:'Prices Aug 6'},
+           {t:'BRLA',n:'Boreal Analytics',p:26.50,d:0,note:'Prices Aug 14'} ],
+    Collections:[ {t:'ALTA',n:'Alberta energy · 12 names',p:0,d:1.02,coll:true},
+                  {t:'DIVI',n:'Monthly dividends · 18 names',p:0,d:0.24,coll:true},
+                  {t:'GRN',n:'Clean power · 9 names',p:0,d:-0.61,coll:true} ]
+  },
+  watch:['NVDA','XEQT.TO']
+};
+DB.accounts.find(a=>a.id==='inv').bal =
+  DB.cash + DB.holdings.reduce((s,h)=>s+h.q*h.p,0);
+
+const STATE = { tab:'home', seg:'overview', reveal:false, range:'1M', cardIdx:0,
+                dcat:'Stocks', amount:'', payee:null, chat:[] };
+
+/* ============================================================
+   2. HELPERS
+   ============================================================ */
+const $  = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const money = n => (n<0?'-':'') + '$' + Math.abs(n).toLocaleString('en-CA',{minimumFractionDigits:2,maximumFractionDigits:2});
+const money0 = n => '$' + Math.abs(n).toLocaleString('en-CA',{maximumFractionDigits:0});
+const signed = n => (n>0?'+':'') + money(n).replace('-','-');
+const pct = n => (n>0?'+':'') + n.toFixed(2) + '%';
+const ic = (id,cls='') => `<svg viewBox="0 0 24 24" class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
+const card = () => DB.cards[STATE.cardIdx];
+const netWorth = () => DB.accounts.filter(a=>a.bal>0).reduce((s,a)=>s+a.bal,0);
+const portfolio = () => DB.cash + DB.holdings.reduce((s,h)=>s+h.q*h.p,0);
+const dayChange = () => DB.holdings.reduce((s,h)=>s+(h.q*h.p)*(h.d/100),0);
+const spendLeft = () => DB.spend.budget - DB.spend.total;
+
+function bigAmount(n){
+  const s = money(n).split('.');
+  return `<div class="amt" data-count="${n}">${s[0]}<span class="cents">.${s[1]}</span></div>`;
+}
+function walk(seed,n,drift){
+  let x=seed, v=100, out=[];
+  for(let i=0;i<n;i++){ x=(x*9301+49297)%233280; out.push(v += (x/233280-.5)*3.4 + drift); }
+  return out;
+}
+function sparkSVG(series,neg){
+  const w=320,h=110,p=8;
+  const mn=Math.min(...series), mx=Math.max(...series), rg=(mx-mn)||1;
+  const pts=series.map((v,i)=>[p+i*(w-p*2)/(series.length-1), h-p-((v-mn)/rg)*(h-p*2)]);
+  const d=pts.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join(' ');
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+    <path class="ar" d="${d} L${w-p} ${h} L${p} ${h} Z"/>
+    <path class="ln ${neg?'neg':''}" d="${d}" vector-effect="non-scaling-stroke"/></svg>`;
+}
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* number roll-up — 900ms cubic ease-out */
+function countUp(el,target){
+  if(REDUCED){ el.innerHTML=splitMoney(target); return; }
+  const t0=performance.now(), dur=900;
+  (function step(t){
+    const p=Math.min((t-t0)/dur,1), e=1-Math.pow(1-p,3);
+    el.innerHTML=splitMoney(target*e);
+    if(p<1) requestAnimationFrame(step);
+  })(t0);
+}
+function splitMoney(n){
+  const q=money(n).split('.');
+  return q[0]+'<span class="cents">.'+q[1]+'</span>';
+}
+function runCounters(){
+  $$('.amt[data-count]').forEach(el=>countUp(el, parseFloat(el.dataset.count)));
+}
+
+/* ---- the pile: each card sticks, then the next settles onto it ---- */
+let pileItems=[], PILE_TOP=112;
+const PEEK = 11;
+function layoutPile(){
+  pileItems=[...document.querySelectorAll('#pile .pile-item')];
+  if(!pileItems.length) return;
+  const sw=document.querySelector('.segwrap');
+  if(sw){
+    const stick=parseFloat(getComputedStyle(sw).top)||62;
+    PILE_TOP=Math.round(stick+sw.offsetHeight);
+  }
+  pileItems.forEach((el,i)=>{ el.style.top=(PILE_TOP+i*PEEK)+'px'; });
+  stepPile();
+}
+function stepPile(){
+  if(!pileItems.length) return;
+  const scTop=$('#scroll').getBoundingClientRect().top;
+  const a=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--pile-sh-a'))||.5;
+  for(let i=0;i<pileItems.length;i++){
+    const cardEl=pileItems[i].firstElementChild, next=pileItems[i+1];
+    let p=0;
+    if(next){
+      const stick=scTop+PILE_TOP+i*PEEK;
+      const h=pileItems[i].offsetHeight;
+      const gap=next.getBoundingClientRect().top-stick;
+      p=1-Math.max(0,Math.min(1,gap/(h||1)));
+    }
+    const e=p*p*(3-2*p);                       /* smoothstep */
+    cardEl.style.transform=`scale(${(1-.085*e).toFixed(4)}) translateY(${(-9*e).toFixed(2)}px)`;
+    cardEl.style.borderRadius=(26+8*e).toFixed(1)+'px';
+    cardEl.style.setProperty('--shade',e.toFixed(3));
+    cardEl.style.boxShadow=`0 ${(18-10*e).toFixed(0)}px ${(50-24*e).toFixed(0)}px rgba(6,19,5,${(a-.4*a*e).toFixed(3)})`;
+  }
+}
+addEventListener('resize',()=>{ layoutPile(); },{passive:true});
+
+let toastT;
+function toast(msg){
+  const t=$('#toast'); t.textContent=msg; t.classList.add('is-on');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('is-on'),2100);
+}
+function openSheet(html){
+  $('#sheetBody').innerHTML=html; $('#sheet').classList.add('is-on'); $('#scrim').classList.add('is-on');
+}
+function closeSheet(){ $('#sheet').classList.remove('is-on'); $('#scrim').classList.remove('is-on'); }
+$('#scrim').addEventListener('click',closeSheet);
+
+function animateBars(root){
+  (root||document).querySelectorAll('.rail i[data-w], .bar i[data-w]').forEach(b=>{
+    requestAnimationFrame(()=>{ b.style.width=b.dataset.w; });
+  });
+  const gf=document.getElementById('gaugeFill');
+  if(gf) requestAnimationFrame(()=>{ gf.style.strokeDashoffset=251.3*(1-(DB.credit.score-300)/600); });
+}
+function revealOn(){
+  const io=new IntersectionObserver(es=>es.forEach(e=>{
+    if(e.isIntersecting){ e.target.classList.add('seen'); io.unobserve(e.target); }
+  }),{root:$('#scroll'),threshold:.08,rootMargin:'0px 0px -6% 0px'});
+  $$('.screen.is-on .rv:not(.seen)').forEach((n,i)=>{ n.style.transitionDelay=Math.min(i*45,260)+'ms'; io.observe(n); });
+}
+
+/* ============================================================
+   3. SHELL — tab bar, screen switching, scroll behaviour
+   ============================================================ */
+const TABS=[
+  {id:'home',    label:'Home',     icon:'i-home'},
+  {id:'invest',  label:'Invest',   icon:'i-chart'},
+  {id:'move',    label:'Move',     icon:'i-move'},
+  {id:'discover',label:'Discover', icon:'i-compass'},
+  {id:'help',    label:'Help',     icon:'i-help'}
+];
+$('#tabbar').innerHTML = TABS.map(t=>
+  `<button class="tab" role="tab" data-tab="${t.id}" aria-selected="${t.id===STATE.tab}">
+     ${ic(t.icon)}<span>${t.label}</span></button>`).join('');
+
+function go(tab){
+  STATE.tab=tab;
+  $$('.tab').forEach(b=>b.setAttribute('aria-selected', b.dataset.tab===tab));
+  $$('.screen').forEach(s=>s.classList.toggle('is-on', s.id==='s-'+tab));
+  $('#scroll').scrollTop=0;
+  $('#progress').classList.add('is-on');
+  $('#progress i').style.width='0%';
+  ({invest:renderInvest, move:renderMove, discover:renderDiscover, help:renderHelp}[tab]||(()=>{}))();
+  requestAnimationFrame(()=>{ animateBars(); revealOn(); runCounters();
+    if(tab==='home') layoutPile(); else pileItems=[]; });
+}
+$('#tabbar').addEventListener('click',e=>{
+  const b=e.target.closest('[data-tab]'); if(b) go(b.dataset.tab);
+});
+
+$('#scroll').addEventListener('scroll',()=>{
+  const y=$('#scroll').scrollTop;
+  $('#head').classList.toggle('is-stuck', y>18);
+  const sky=$('#sky');
+  sky.style.setProperty('--sky-y', (-y*0.34).toFixed(1)+'px');
+  sky.style.setProperty('--sky-o', Math.max(0,1-y/420).toFixed(3));
+  const sc=$('#scroll'), max=sc.scrollHeight-sc.clientHeight;
+  $('#progress i').style.width = max>4 ? (y/max*100).toFixed(2)+'%' : '0%';
+  if(STATE.tab==='home') stepPile();
+},{passive:true});
+
+$('#btnAlerts').addEventListener('click',()=>openSheet(`
+  <h3 style="font-family:var(--f-display);font-size:20px;margin:0 0 14px;letter-spacing:-.02em">Alerts</h3>
+  <div class="rows">
+    <div class="row"><div class="ricon">${ic('i-bolt')}</div><div class="rmain">
+      <b>Payday landed early</b><span>Skechers payroll · 2 days ahead</span></div>
+      <div class="ramt"><b class="up">+$1,842.55</b><span>Jul 23</span></div></div>
+    <div class="row"><div class="ricon">${ic('i-shield')}</div><div class="rmain">
+      <b>Credit score moved up 8</b><span>Now 726 · Good</span></div>
+      <div class="ramt"><span>Jul 20</span></div></div>
+    <div class="row"><div class="ricon">${ic('i-bill')}</div><div class="rmain">
+      <b>Rent is due in 7 days</b><span>$1,150.00 · Crystal Ridge</span></div>
+      <div class="ramt"><span>Aug 1</span></div></div>
+  </div>
+  <button class="btn ghost" style="margin-top:16px" onclick="closeSheet()">Close</button>`));
+
+/* ============================================================
+   4. HOME — seven segments
+   ============================================================ */
+const SEGS=[
+  {id:'overview', label:'Overview'}, {id:'card', label:'Card'},
+  {id:'accounts', label:'Accounts'}, {id:'credit', label:'Credit'},
+  {id:'spending', label:'Spending'}, {id:'activity', label:'Activity'},
+  {id:'goals', label:'Goals'}
+];
+$('#seg').innerHTML = SEGS.map(s=>
+  `<button role="tab" data-seg="${s.id}" aria-selected="${s.id===STATE.seg}">${s.label}</button>`).join('');
+$('#seg').addEventListener('click',e=>{
+  const b=e.target.closest('[data-seg]'); if(!b) return;
+  STATE.seg=b.dataset.seg;
+  $$('#seg button').forEach(x=>x.setAttribute('aria-selected', x.dataset.seg===STATE.seg));
+  b.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});
+  renderHome();
+});
+
+function renderHome(){
+  const tp=$('#homeTape');
+  if(tp && !tp.innerHTML)
+    tp.innerHTML = tapeHTML([...DB.discover.Stocks,...DB.discover.ETFs,...DB.discover.Crypto]);
+  $('#homeBody').innerHTML = HOME[STATE.seg]();
+  requestAnimationFrame(()=>{ animateBars(); revealOn(); runCounters(); layoutPile(); });
+}
+
+const HOME={
+/* ---- Overview: rail + pile ---- */
+overview(){
+  const nw=netWorth(), dc=dayChange(), sp=DB.spend, mx=sp.cats[0].v;
+  const pileCard=(id,title,go,body)=>`
+    <div class="pile-item"><div class="pile-card" id="pile-${id}">
+      <div class="pile-hd"><h3>${title}</h3>
+        ${go?`<button class="go" data-seg-jump="${go}">Open</button>`:''}</div>
+      ${body}</div></div>`;
+
+  return `
+  <div class="hero glass rv">
+    <span class="eyebrow">Total balance · CAD</span>
+    ${bigAmount(nw)}
+    <div class="delta ${dc<0?'neg':''}">${dc<0?'▼':'▲'} ${money(Math.abs(dc))} today · ${pct(dc/portfolio()*100)}</div>
+  </div>
+  <div class="qa rv">
+    <button data-act="add">${ic('i-plus')}<span>Add money</span></button>
+    <button data-act="send">${ic('i-send')}<span>Send</span></button>
+    <button data-act="bill">${ic('i-bill')}<span>Pay bill</span></button>
+    <button data-act="deposit">${ic('i-deposit')}<span>Deposit</span></button>
+  </div>
+  <div class="note rv">
+    <div class="spark-i">${ic('i-bolt')}</div>
+    <p><b>You're ${money(sp.last-sp.total)} under last month.</b>
+       Groceries are the one category running hot — ${money(sp.cats[0].v)} so far in ${sp.month}.</p>
+  </div>
+
+  <h2 class="title rv" style="font-size:19px;margin:22px 0 10px">Your accounts</h2>
+  <div class="rail" id="rail">
+    ${DB.accounts.map(a=>`
+      <button class="rail-card" data-seg-jump="accounts">
+        <span class="ic">${ic(a.icon)}</span>
+        <b>${a.name}</b>
+        <span class="amt" style="font-family:var(--f-mono);font-size:16px">${money(a.bal)}</span>
+        <span class="sub">${a.sub}</span>
+      </button>`).join('')}
+  </div>
+
+  <h2 class="title rv" style="font-size:19px;margin:22px 0 2px">Everything at a glance</h2>
+  <p class="sub rv" style="margin-bottom:14px">Scroll — each card settles onto the one before it.</p>
+  <div class="pile" id="pile">
+    ${pileCard('pv','Portfolio','',`
+      <p class="pile-figure">${money(portfolio())}</p>
+      <p class="pile-note ${dc<0?'down':'up'}">${dc<0?'▼':'▲'} ${money(Math.abs(dc))} today</p>
+      ${sparkSVG(walk(29,40,.12),dc<0)}`)}
+    ${pileCard('spent','This month','spending',`
+      <p class="pile-figure">${money(sp.total)}</p>
+      <p class="pile-note">of ${money0(sp.budget)} · ${money(spendLeft())} left</p>
+      <div style="margin-top:14px">
+        ${sp.cats.slice(0,4).map(c=>`<div class="catrow">
+          <span class="n">${c.n}</span><span class="v">${money(c.v)}</span>
+          <div class="bar"><i data-w="${(c.v/mx*100).toFixed(1)}%"></i></div></div>`).join('')}
+      </div>`)}
+    ${pileCard('score','Credit score','credit',`
+      <p class="pile-figure">${DB.credit.score}</p>
+      <p class="pile-note">${DB.credit.band} · up ${DB.credit.delta} this month</p>
+      <div style="display:flex;align-items:flex-end;gap:7px;height:58px;margin-top:14px">
+        ${DB.credit.hist.map((v,k)=>`<div style="flex:1;height:${Math.max(10,((v-680)/50)*58)}px;
+          border-radius:5px 5px 2px 2px;background:var(--bar-grad);opacity:${(.5+k*.09).toFixed(2)}"></div>`).join('')}
+      </div>`)}
+    ${pileCard('goals','Goals','goals',
+      DB.goals.map(g=>`<div class="catrow">
+        <span class="n">${g.e} ${g.n}</span><span class="v">${(g.now/g.tgt*100).toFixed(0)}%</span>
+        <div class="bar"><i data-w="${(g.now/g.tgt*100).toFixed(1)}%"></i></div></div>`).join(''))}
+    ${pileCard('recent','Recent','activity',
+      `<div class="rows">${DB.tx.slice(0,4).map(t=>`
+        <div class="row"><div class="ricon">${t.i}</div>
+          <div class="rmain"><b>${t.m}</b><span>${t.c} · ${t.d}</span></div>
+          <div class="ramt"><b class="${t.a>0?'up':''}">${t.a>0?'+':''}${money(t.a).replace('-','−')}</b></div>
+        </div>`).join('')}</div>`)}
+  </div>
+  <div class="endcap rv" style="margin-top:18px">End of overview</div>`;
+},
+
+/* ---- Card: cascading stack ---- */
+card(){
+  const S=DB.cardSettings;
+  return `
+  <div class="rv" style="perspective:1100px">
+    <div class="stack" id="stack">${DB.cards.map((c,i)=>slotHTML(c,i)).join('')}</div>
+  </div>
+  <div class="stack-legend rv">${DB.cards.map((c,i)=>
+    `<button data-card-idx="${i}" aria-current="${i===STATE.cardIdx}" aria-label="Show ${c.label} card"></button>`).join('')}</div>
+  <div id="cardActions" class="rv">${cardActionsHTML()}</div>
+  <div class="panel card rv">
+    <div class="card-h"><h3>Controls</h3><span class="eyebrow">All cards</span></div>
+    <button class="tog" data-tog="tap" aria-pressed="${S.tap}">
+      <div class="tmain"><b>Tap to pay</b><span>Contactless at the terminal</span></div>
+      <div class="sw"><i></i></div></button>
+    <button class="tog" data-tog="online" aria-pressed="${S.online}">
+      <div class="tmain"><b>Online purchases</b><span>Card number works on the web</span></div>
+      <div class="sw"><i></i></div></button>
+    <button class="tog" data-tog="atm" aria-pressed="${S.atm}">
+      <div class="tmain"><b>ATM withdrawals</b><span>Cash out at any Interac machine</span></div>
+      <div class="sw"><i></i></div></button>
+  </div>
+  <div class="note rv">
+    <div class="spark-i">${ic('i-shield')}</div>
+    <p><b>Cushion covers you to ${money0(S.cushion)}.</b>
+       If a purchase would overdraw Spend, Aurora fronts it — no fee, paid back on your next deposit.</p>
+  </div>
+  <div class="panel card rv">
+    <div class="card-h"><h3>Perks on this card</h3></div>
+    <div class="rows">
+      <div class="row"><div class="ricon">${ic('i-bolt')}</div>
+        <div class="rmain"><b>Early payday</b><span>Direct deposits land up to ${S.payday} days sooner</span></div>
+        <div class="ramt"><b class="up">On</b></div></div>
+      <div class="row"><div class="ricon">${ic('i-shield')}</div>
+        <div class="rmain"><b>Credit Builder</b><span>Everyday spending reports to the bureaus</span></div>
+        <div class="ramt"><b class="up">On</b></div></div>
+      <div class="row"><div class="ricon">${ic('i-leaf')}</div>
+        <div class="rmain"><b>Round-ups</b><span>Change from each tap moves to Grow</span></div>
+        <div class="ramt"><b class="up">On</b></div></div>
+    </div>
+  </div>`;
+},
+
+/* ---- Accounts ---- */
+accounts(){
+  return `
+  <div class="hero glass rv">
+    <span class="eyebrow">Across all accounts</span>${bigAmount(netWorth())}
+    <div class="delta">▲ ${money(212.40)} this week</div>
+  </div>
+  ${DB.accounts.map(a=>{
+    const neg = a.bal<0;
+    return `<div class="panel card rv">
+      <div class="row" style="border:0;padding:0">
+        <div class="ricon">${ic(a.icon)}</div>
+        <div class="rmain"><b>${a.name}</b><span>${a.sub}</span></div>
+        <div class="ramt"><b style="font-size:15px">${money(a.bal)}</b>
+          <span>${neg?'owed':'available'}</span></div>
+      </div>
+      ${a.id==='grow'?`<div class="hr"></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary)">
+          <span>Interest earned in July</span><span class="up" style="font-family:var(--f-mono)">+$31.42</span></div>`:''}
+      ${a.id==='build'?`<div class="hr"></div><div class="bar alt"><i data-w="36%"></i></div>
+        <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--text-tertiary);margin-top:8px">
+          <span>Keep use under 30% to help your score</span><span>36%</span></div>`:''}
+      ${a.id==='inv'?`<div class="hr"></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary)">
+          <span>Cash available to invest</span><span style="font-family:var(--f-mono)">${money(DB.cash)}</span></div>`:''}
+    </div>`;}).join('')}
+  <button class="btn ghost rv" data-act="open-acct">${ic('i-plus')} Open another account</button>`;
+},
+
+/* ---- Credit ---- */
+credit(){
+  const c=DB.credit, len=251.3, off=len*(1-(c.score-300)/600);
+  return `
+  <div class="glass card rv" style="border-radius:var(--r-lg);padding:20px 16px 18px;text-align:center">
+    <span class="eyebrow">Equifax · updated Jul 20</span>
+    <svg class="gauge" viewBox="0 0 200 122" width="210" height="128" aria-hidden="true">
+      <path class="track" d="M20 108 A80 80 0 0 1 180 108" fill="none" stroke-width="13" stroke-linecap="round"/>
+      <path class="fill" d="M20 108 A80 80 0 0 1 180 108" fill="none" stroke-width="13"
+            stroke-dasharray="${len}" stroke-dashoffset="${len}" id="gaugeFill"/>
+    </svg>
+    <div class="gnum" style="margin-top:-46px">${c.score}</div>
+    <div style="margin-top:8px"><span class="delta">▲ ${c.delta} points this month · ${c.band}</span></div>
+  </div>
+  <div class="panel card rv">
+    <div class="card-h"><h3>What's moving it</h3></div>
+    ${c.factors.map(f=>`<div class="catrow">
+      <span class="n">${f.n}</span><span class="v">${f.v}</span>
+      <div class="bar ${f.good?'':'alt'}"><i data-w="${f.pc}%"></i></div></div>`).join('')}
+  </div>
+  <div class="panel card rv">
+    <div class="card-h"><h3>Last 6 months</h3><span class="eyebrow">+34 total</span></div>
+    <div style="display:flex;align-items:flex-end;gap:8px;height:96px">
+      ${c.hist.map((v,i)=>{const h=((v-680)/50)*100;return `
+        <div style="flex:1;text-align:center">
+          <div style="height:${Math.max(12,h)}px;border-radius:7px 7px 3px 3px;
+            background:linear-gradient(180deg,var(--c-200),var(--c-500));opacity:${.5+i*.09}"></div>
+          <span style="font-family:var(--f-mono);font-size:9.5px;color:var(--text-tertiary);display:block;margin-top:6px">${v}</span>
+        </div>`;}).join('')}
+    </div>
+  </div>
+  <div class="note rv"><div class="spark-i">${ic('i-shield')}</div>
+    <p><b>Paying the Credit Builder down to $150 would put you under 30% use.</b>
+       That's usually worth a few points on its own.</p></div>`;
+},
+
+/* ---- Spending ---- */
+spending(){
+  const s=DB.spend, mx=s.cats[0].v;
+  return `
+  <div class="hero glass rv">
+    <span class="eyebrow">${s.month} · so far</span>${bigAmount(s.total)}
+    <div class="delta">▼ ${money(s.last-s.total)} vs June</div>
+  </div>
+  <div class="panel card rv">
+    <div class="card-h"><h3>Where it went</h3><span class="eyebrow">7 categories</span></div>
+    ${s.cats.map(c=>`<div class="catrow">
+      <span class="n">${c.n}</span><span class="v">${money(c.v)}</span>
+      <div class="bar"><i data-w="${(c.v/mx*100).toFixed(1)}%"></i></div></div>`).join('')}
+  </div>
+  <div class="panel card rv">
+    <div class="card-h"><h3>Budget</h3></div>
+    <div class="stats">
+      <div class="stat"><span class="k">Spent</span><span class="v">${money(s.total)}</span></div>
+      <div class="stat"><span class="k">Left</span><span class="v">${money(spendLeft())}</span></div>
+      <div class="stat"><span class="k">Daily pace</span><span class="v">${money(s.total/24)}</span></div>
+      <div class="stat"><span class="k">Safe daily</span><span class="v">${money(spendLeft()/7)}</span></div>
+    </div>
+  </div>
+  <div class="panel card rv">
+    <div class="card-h"><h3>Top merchants</h3></div>
+    <div class="rows">
+      ${[['Save-On-Foods',248.31,3],['Rent · Crystal Ridge',1150.00,1],['Petro-Canada',154.60,2],
+         ['Tim Hortons',48.55,11],['Telus',95.00,1]].map(m=>`
+        <div class="row"><div class="ricon">${m[0].slice(0,2).toUpperCase()}</div>
+          <div class="rmain"><b>${m[0]}</b><span>${m[2]} ${m[2]===1?'visit':'visits'}</span></div>
+          <div class="ramt"><b>${money(m[1])}</b></div></div>`).join('')}
+    </div>
+  </div>`;
+},
+
+/* ---- Activity ---- */
+activity(){
+  const days=[...new Set(DB.tx.map(t=>t.d))];
+  return `
+  <h2 class="title rv">Activity</h2>
+  <p class="sub rv">Every move on Spend, newest first.</p>
+  <div class="chips rv" id="txChips">
+    ${['All','Income','Groceries','Bills','Food & drink','Transfer'].map((c,i)=>
+      `<button class="chip" data-cat="${c}" aria-pressed="${i===0}">${c}</button>`).join('')}
+  </div>
+  <div class="panel card rv" id="txList">${txRows('All')}</div>`;
+},
+
+/* ---- Goals ---- */
+goals(){
+  const total=DB.goals.reduce((s,g)=>s+g.now,0), tgt=DB.goals.reduce((s,g)=>s+g.tgt,0);
+  return `
+  <div class="hero glass rv">
+    <span class="eyebrow">Saved toward goals</span>${bigAmount(total)}
+    <div class="delta">${(total/tgt*100).toFixed(0)}% of ${money0(tgt)}</div>
+  </div>
+  ${DB.goals.map((g,i)=>`
+    <div class="goal rv">
+      <div class="top"><div class="emo">${g.e}</div><b>${g.n}</b>
+        <span class="pc">${(g.now/g.tgt*100).toFixed(0)}%</span></div>
+      <div class="bar"><i data-w="${(g.now/g.tgt*100).toFixed(1)}%"></i></div>
+      <div class="fig"><span>${money(g.now)}</span><span>${money0(g.tgt)}</span></div>
+      <div class="btn2" style="margin-top:12px">
+        <button class="btn ghost" style="padding:10px;font-size:12.5px" data-goal="${i}" data-add="25">Add $25</button>
+        <button class="btn ghost" style="padding:10px;font-size:12.5px" data-goal="${i}" data-add="100">Add $100</button>
+      </div>
+    </div>`).join('')}
+  <div class="note rv"><div class="spark-i">${ic('i-leaf')}</div>
+    <p><b>Round-ups added ${money(12.80)} this week.</b> At that pace the emergency fund fills in about 14 months.</p></div>
+  <button class="btn rv" data-act="new-goal">${ic('i-plus')} Start a new goal</button>`;
+}
+};
+
+function slotHTML(c,i){
+  const n=DB.cards.length, pos=(i-STATE.cardIdx+n)%n;
+  const back = pos!==0;
+  return `<div class="slot ${back?'':'is-front'}" data-card-idx="${i}"
+            style="--i:${pos};z-index:${20-pos}"
+            ${back?`role="button" tabindex="0" aria-label="Bring ${c.label} card to front"`:'aria-hidden="false"'}
+            >${cardFace(c,pos===0)}</div>`;
+}
+function cardFace(c,front){
+  const shown = front && STATE.reveal;
+  return `<div class="cardart tone-${c.tone} ${c.frozen?'frozen':''}" ${front?'id="cardArt"':''}>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div class="brand">aurora</div><div class="eyebrow">${c.label}</div>
+    </div>
+    <div class="chipart"></div>
+    <div class="pan">${c.pan.map(g=>`<span>${shown?g:'••••'}</span>`).join('')}</div>
+    <div class="meta">
+      <div><span>Expires</span><b>${shown?c.exp:'••/••'}</b></div>
+      <div><span>CVV</span><b>${shown?c.cvv:'•••'}</b></div>
+      <div style="margin-left:auto"><span>${c.kind}</span><b style="font-size:11px">${DB.cardName}</b></div>
+    </div>
+    ${c.frozen?'<div class="frozen-tag">Frozen</div>':''}
+  </div>`;
+}
+function cardActionsHTML(){
+  const c=card();
+  return `<div class="btn2" style="margin-bottom:14px">
+    <button class="btn ghost" data-card="reveal">${ic('i-eye')}${STATE.reveal?'Hide details':'Show details'}</button>
+    <button class="btn ${c.frozen?'':'ghost'}" data-card="freeze">${ic('i-lock')}${c.frozen?'Unfreeze':'Freeze card'}</button>
+  </div>`;
+}
+function restack(){
+  const n=DB.cards.length;
+  $$('#stack .slot').forEach(el=>{
+    const i=+el.dataset.cardIdx, pos=(i-STATE.cardIdx+n)%n;
+    el.style.setProperty('--i',pos);
+    el.style.zIndex=20-pos;
+    el.classList.toggle('is-front',pos===0);
+    el.innerHTML=cardFace(DB.cards[i],pos===0);
+  });
+  $$('.stack-legend button').forEach(b=>
+    b.setAttribute('aria-current', +b.dataset.cardIdx===STATE.cardIdx));
+  const a=$('#cardActions'); if(a) a.innerHTML=cardActionsHTML();
+}
+
+function txRows(cat){
+  const list = cat==='All' ? DB.tx : DB.tx.filter(t=>t.c===cat);
+  if(!list.length) return `<div class="empty"><b>Nothing here yet</b>Try another category.</div>`;
+  const days=[...new Set(list.map(t=>t.d))];
+  return days.map(d=>`<div class="day">${d}</div><div class="rows">${
+    list.filter(t=>t.d===d).map((t,i)=>`
+      <button class="row" data-tx="${DB.tx.indexOf(t)}">
+        <div class="ricon">${t.i}</div>
+        <div class="rmain"><b>${t.m}</b><span>${t.c}</span></div>
+        <div class="ramt"><b class="${t.a>0?'up':''}">${t.a>0?'+':''}${money(t.a).replace('-','−')}</b></div>
+      </button>`).join('')}</div>`).join('');
+}
+
+/* ============================================================
+   5. INVEST
+   ============================================================ */
+const RANGES={'1D':[7,26,.02],'1W':[13,34,.06],'1M':[29,40,.12],'1Y':[71,52,.35],'ALL':[113,64,.5]};
+function renderInvest(){
+  const val=portfolio(), dc=dayChange(), r=RANGES[STATE.range];
+  const series=walk(r[0],r[1],r[2]);
+  $('#s-invest').innerHTML=`
+  <div class="hero glass rv">
+    <span class="eyebrow">Portfolio · TFSA</span>${bigAmount(val)}
+    <div class="delta ${dc<0?'neg':''}">${dc<0?'▼':'▲'} ${money(Math.abs(dc))} today · ${pct(dc/val*100)}</div>
+  </div>
+  ${tapeHTML(DB.holdings)}
+  <div class="panel card rv">
+    ${sparkSVG(series,dc<0)}
+    <div class="ranges" id="ranges">
+      ${Object.keys(RANGES).map(k=>`<button data-range="${k}" aria-selected="${k===STATE.range}">${k}</button>`).join('')}
+    </div>
+  </div>
+  <div class="btn2 rv" style="margin-bottom:14px">
+    <button class="btn" data-act="add">${ic('i-plus')} Add funds</button>
+    <button class="btn ghost" data-act="withdraw">${ic('i-deposit')} Withdraw</button>
+  </div>
+  <div class="panel card rv">
+    <div class="card-h"><h3>Holdings</h3><span class="eyebrow">${DB.holdings.length} positions</span></div>
+    <div class="rows">${DB.holdings.map(h=>`
+      <button class="row" data-sym="${h.t}">
+        <div class="ricon" style="font-size:11px;letter-spacing:-.02em">${h.t.slice(0,2)}</div>
+        <div class="rmain"><b>${h.n}</b><span>${h.q} ${h.q===1?'share':'shares'} · ${h.t}</span></div>
+        <div class="ramt"><b>${money(h.q*h.p)}</b><span class="${h.d<0?'down':'up'}">${pct(h.d)}</span></div>
+      </button>`).join('')}
+    </div>
+    <div class="hr"></div>
+    <div class="row" style="border:0;padding:0">
+      <div class="ricon">${ic('i-coin')}</div>
+      <div class="rmain"><b>Cash</b><span>Ready to invest</span></div>
+      <div class="ramt"><b>${money(DB.cash)}</b></div>
+    </div>
+  </div>
+  <div class="panel card rv">
+    <div class="card-h"><h3>Automation</h3><span class="eyebrow">Set it, forget it</span></div>
+    ${DB.automation.map(a=>`
+      <button class="tog" data-auto="${a.id}" aria-pressed="${a.on}">
+        <div class="tmain"><b>${a.b}</b><span>${a.s}</span></div>
+        <div class="sw"><i></i></div></button>`).join('')}
+  </div>
+  <div class="card-h rv" style="margin:20px 0 12px"><h3>Where else money can sit</h3></div>
+  <div class="tiles rv">
+    <button class="tile" data-branch="Managed">${ic('i-leaf')}<b>Managed</b><span>Pick a risk level, Aurora rebalances</span></button>
+    <button class="tile" data-branch="Self-directed">${ic('i-chart')}<b>Self-directed</b><span>Buy what you want, no commission</span></button>
+    <button class="tile" data-branch="Crypto">${ic('i-coin')}<b>Crypto</b><span>BTC, ETH and 40 more</span></button>
+    <button class="tile" data-branch="Cash+">${ic('i-bolt')}<b>Cash+</b><span>4.10% on uninvested cash</span></button>
+    <button class="tile" data-branch="RRSP">${ic('i-shield')}<b>RRSP</b><span>Deduct it from this year's taxes</span></button>
+    <button class="tile" data-branch="FHSA">${ic('i-home')}<b>FHSA</b><span>First home, tax-free growth</span></button>
+  </div>`;
+}
+
+/* ============================================================
+   6. MOVE
+   ============================================================ */
+function renderMove(){
+  const amt = STATE.amount || '0';
+  $('#s-move').innerHTML=`
+  <h2 class="title rv">Move money</h2>
+  <p class="sub rv">Instant between Aurora accounts. Interac e-Transfer everywhere else.</p>
+  <div class="panel card rv">
+    <div class="card-h"><h3>Send to</h3><button class="link" data-act="new-payee">New</button></div>
+    <div class="people" id="people">${DB.people.map(p=>`
+      <button class="person" data-person="${p.n}" aria-pressed="${STATE.payee===p.n}">
+        <div class="av">${p.i}</div><span>${p.n}</span></button>`).join('')}
+    </div>
+  </div>
+  <div class="glass card rv" style="border-radius:var(--r-lg)">
+    <div class="eyebrow" style="text-align:center">Amount · CAD</div>
+    <div class="padamt">$${amt}</div>
+    <p style="text-align:center;margin:0;font-size:12px;color:var(--text-tertiary)">
+      ${money(DB.accounts[0].bal)} available in Spend</p>
+    <div class="pad">
+      ${['1','2','3','4','5','6','7','8','9','.','0','⌫'].map(k=>
+        `<button data-pad="${k}">${k}</button>`).join('')}
+    </div>
+    <div class="btn2" style="margin-top:14px">
+      <button class="btn" data-act="send-now">Send</button>
+      <button class="btn ghost" data-act="request">Request</button>
+    </div>
+  </div>
+  <div class="panel card rv">
+    <div class="card-h"><h3>Between your accounts</h3></div>
+    <div class="rows">
+      <button class="row" data-act="to-grow"><div class="ricon">${ic('i-leaf')}</div>
+        <div class="rmain"><b>Spend → Grow</b><span>Earn 4.10% on it instead</span></div>
+        <div class="ramt"><b class="up">Instant</b></div></button>
+      <button class="row" data-act="to-invest"><div class="ricon">${ic('i-chart')}</div>
+        <div class="rmain"><b>Spend → Invest</b><span>Lands in your TFSA cash</span></div>
+        <div class="ramt"><b class="up">Instant</b></div></button>
+      <button class="row" data-act="pay-build"><div class="ricon">${ic('i-shield')}</div>
+        <div class="rmain"><b>Pay Credit Builder</b><span>$180 owed</span></div>
+        <div class="ramt"><b class="up">Instant</b></div></button>
+    </div>
+  </div>
+  <div class="panel card rv">
+    <div class="card-h"><h3>Recent</h3></div>
+    <div class="rows">${DB.moves.map(m=>`
+      <div class="row"><div class="ricon">${m.n.slice(0,2).toUpperCase()}</div>
+        <div class="rmain"><b>${m.n}</b><span>${m.s}</span></div>
+        <div class="ramt"><b class="${m.a>0?'up':''}">${m.a>0?'+':''}${money(m.a).replace('-','−')}</b></div></div>`).join('')}
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   7. DISCOVER — ticker tape + one long scroll
+   ============================================================ */
+function tapeHTML(feed,slow){
+  const one = feed.filter(o=>o.d!==null&&o.d!==undefined).map(o=>
+    `<button class="tick" data-sym="${o.t}"><b>${o.t}</b><i>${money(o.p)}</i>` +
+    `<em class="${o.d<0?'down':o.d>0?'up':''}">${o.d>0?'▲':o.d<0?'▼':'■'}${Math.abs(o.d).toFixed(1)}%</em></button>`
+  ).join('');
+  return `<div class="tape ${slow?'slow':''}" aria-label="Live prices">
+    <div class="tape-run">${one}${one}</div></div>`;
+}
+const JUMPS=[['movers','Movers'],['sectors','Sectors'],['stocks','Stocks'],['etfs','ETFs'],
+             ['crypto','Crypto'],['ipos','IPOs'],['collections','Collections'],['watch','Watchlist']];
+
+function symRow(x){
+  return `<button class="row" data-sym="${x.t}">
+    <div class="ricon" style="font-size:11px">${x.t.slice(0,2)}</div>
+    <div class="rmain"><b>${x.n}</b><span>${x.coll?'Collection':x.t}${x.note?' · '+x.note:''}</span></div>
+    <div class="ramt">${x.p?`<b>${money(x.p)}</b>`:''}
+      <span class="${x.d<0?'down':'up'}">${x.p||x.coll?pct(x.d):'IPO'}</span></div></button>`;
+}
+function sect(id,title,count,lede,inner){
+  return `<section class="sect" id="sec-${id}">
+    <div class="sect-h"><h3>${title}</h3><span class="n">${count}</span></div>
+    ${lede?`<p class="lede rv">${lede}</p>`:''}
+    <div class="panel card rv">${inner}</div></section>`;
+}
+function renderDiscover(){
+  const D=DB.discover;
+  const tape=[...D.Stocks,...D.Crypto,...D.ETFs];
+  const priced=allSyms().filter(x=>x.p&&x.d);
+  const gain=[...priced].sort((a,b)=>b.d-a.d).slice(0,3);
+  const lose=[...priced].sort((a,b)=>a.d-b.d).slice(0,3);
+  const mover=x=>`<button class="mover" data-sym="${x.t}">
+      <b>${x.n}</b><span class="d ${x.d<0?'down':'up'}">${pct(x.d)}</span>
+      <span class="t">${x.t} · ${money(x.p)}</span></button>`;
+  const mx=Math.max(...DB.sectors.map(z=>Math.abs(z.d)));
+  const watched=allSyms().filter(x=>DB.watch.includes(x.t));
+
+  $('#s-discover').innerHTML=`
+  <h2 class="title rv">Markets</h2>
+  <p class="sub rv">The tape runs live. Everything under it is one long scroll — jump with the chips or just keep going.</p>
+  ${tapeHTML(tape,true)}
+  <div class="ask rv" style="margin-bottom:12px">
+    ${ic('i-search')}<input id="discSearch" placeholder="Search a company or ticker" aria-label="Search markets">
+  </div>
+  <div class="chips rv" id="discChips">
+    ${JUMPS.map(j=>`<button class="chip" data-jump="${j[0]}">${j[1]}</button>`).join('')}
+  </div>
+  <div id="discResults" hidden></div>
+  <div id="discSections">
+    ${sect('movers','Today\'s movers',`${gain.length+lose.length} names`,
+      'The widest swings across everything tradable here.',
+      `<div class="eyebrow" style="margin-bottom:6px">Up most</div>${gain.map(mover).join('')}
+       <div class="hr"></div>
+       <div class="eyebrow" style="margin-bottom:6px">Down most</div>${lose.map(mover).join('')}`)}
+    ${sect('sectors','Sectors',`${DB.sectors.length}`,
+      'Where the TSX is leaning today, measured from flat.',
+      DB.sectors.map(z=>{const w=(Math.abs(z.d)/mx*46).toFixed(1);
+        return `<div class="sectorbar">
+          <span class="n">${z.n}</span>
+          <span class="rail"><i class="${z.d<0?'neg':'pos'}" data-w="${w}%"
+            style="${z.d<0?`left:${(50-w).toFixed(1)}%`:'left:50%'}"></i></span>
+          <span class="v ${z.d<0?'down':'up'}">${pct(z.d)}</span></div>`;}).join(''))}
+    ${sect('stocks','Stocks',`${D.Stocks.length}`,'',`<div class="rows">${D.Stocks.map(symRow).join('')}</div>`)}
+    ${sect('etfs','ETFs',`${D.ETFs.length}`,'',`<div class="rows">${D.ETFs.map(symRow).join('')}</div>`)}
+    ${sect('crypto','Crypto',`${D.Crypto.length}`,'Trades around the clock, including weekends.',
+      `<div class="rows">${D.Crypto.map(symRow).join('')}</div>`)}
+    ${sect('ipos','Upcoming IPOs',`${D.IPOs.length}`,'Register interest before pricing day.',
+      `<div class="rows">${D.IPOs.map(symRow).join('')}</div>`)}
+    ${sect('collections','Collections',`${D.Collections.length}`,'Themed baskets, bought as one order.',
+      `<div class="rows">${D.Collections.map(symRow).join('')}</div>`)}
+    ${sect('watch','Watchlist',`${DB.watch.length}`,'',
+      watched.length?`<div class="rows">${watched.map(symRow).join('')}</div>`
+        :`<div class="empty"><b>Nothing starred yet</b>Open anything above and tap the star.</div>`)}
+    <div class="endcap">End of tape · demo data only</div>
+  </div>`;
+
+  const box=$('#discSearch');
+  box.addEventListener('input',()=>{
+    const q=box.value.trim().toLowerCase();
+    const res=$('#discResults'), secs=$('#discSections');
+    if(!q){ res.hidden=true; res.innerHTML=''; secs.hidden=false; return; }
+    secs.hidden=true; res.hidden=false;
+    res.innerHTML=`<div class="panel card">${discRows(q)}</div>`;
+  });
+}
+function allSyms(){ return Object.values(DB.discover).flat(); }
+function discRows(q){
+  const list = allSyms().filter(x=>(x.t+' '+x.n).toLowerCase().includes(q));
+  if(!list.length) return `<div class="empty"><b>No match</b>Try a ticker like XEQT or a name like Enbridge.</div>`;
+  return `<div class="rows">${list.map(symRow).join('')}</div>`;
+}
+function symSheet(sym){
+  const x = allSyms().concat(DB.holdings).find(a=>a.t===sym); if(!x) return;
+  const held = DB.holdings.find(h=>h.t===sym);
+  const starred = DB.watch.includes(sym);
+  openSheet(`
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:6px">
+      <div><div class="eyebrow">${sym}</div>
+        <h3 style="font-family:var(--f-display);font-size:22px;margin:2px 0 0;letter-spacing:-.03em">${x.n}</h3></div>
+    </div>
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px">
+      <span style="font-family:var(--f-display);font-size:30px;font-weight:700;letter-spacing:-.035em">${x.p?money(x.p):'—'}</span>
+      <span class="${x.d<0?'down':'up'}" style="font-family:var(--f-mono);font-size:13px">${pct(x.d)}</span>
+    </div>
+    ${sparkSVG(walk(sym.length*17+3,40,x.d>0?.14:-.1), x.d<0)}
+    <div class="stats" style="margin-top:16px">
+      <div class="stat"><span class="k">In watchlist</span><span class="v">${starred?'Yes':'No'}</span></div>
+      <div class="stat"><span class="k">You hold</span><span class="v">${held?held.q:'—'}</span></div>
+      <div class="stat"><span class="k">Your value</span><span class="v">${held?money(held.q*held.p):'$0.00'}</span></div>
+      <div class="stat"><span class="k">Day move</span><span class="v ${x.d<0?'down':'up'}">${pct(x.d)}</span></div>
+    </div>
+    <div class="btn2" style="margin-top:16px">
+      <button class="btn" data-buy="${sym}">Buy (demo)</button>
+      <button class="btn ghost" data-star="${sym}">${starred?'Remove from watchlist':'Add to watchlist'}</button>
+    </div>
+    <button class="btn ghost" style="margin-top:10px" onclick="closeSheet()">Close</button>`);
+}
+
+/* ============================================================
+   8. HELP — Ask Aurora, rule-based, reads live app state
+   ============================================================ */
+const PROMPTS=['How much can I spend?','What is my biggest expense?','When is rent due?',
+  'How is my portfolio doing?','Why did my credit score change?','Freeze my card'];
+
+function renderHelp(){
+  $('#s-help').innerHTML=`
+  <h2 class="title rv">Ask Aurora</h2>
+  <p class="sub rv">Answers come from your accounts on this device. Nothing leaves your phone.</p>
+  <div class="panel card rv">
+    <div class="chat" id="chat"></div>
+    <div class="chips" style="margin:4px 0 12px">
+      ${PROMPTS.map(p=>`<button class="chip" data-say="${p}">${p}</button>`).join('')}
+    </div>
+    <div class="ask">
+      <input id="askIn" placeholder="Ask about your money" aria-label="Ask Aurora">
+      <button class="go" id="askGo" aria-label="Send">${ic('i-send','')}</button>
+    </div>
+  </div>
+  <div class="panel card rv">
+    <div class="card-h"><h3>Common questions</h3></div>
+    <div class="rows">
+      <button class="row" data-say="What is Cushion?"><div class="ricon">${ic('i-shield')}</div>
+        <div class="rmain"><b>What is Cushion?</b><span>Overdraft, without the fee</span></div></button>
+      <button class="row" data-say="When do I get paid?"><div class="ricon">${ic('i-bolt')}</div>
+        <div class="rmain"><b>When do I get paid?</b><span>Early payday explained</span></div></button>
+      <button class="row" data-say="How do round-ups work?"><div class="ricon">${ic('i-leaf')}</div>
+        <div class="rmain"><b>How do round-ups work?</b><span>Spare change into Grow</span></div></button>
+      <button class="row" data-say="Is my money protected?"><div class="ricon">${ic('i-lock')}</div>
+        <div class="rmain"><b>Is my money protected?</b><span>Coverage and security</span></div></button>
+    </div>
+  </div>
+  <p class="rv" style="text-align:center;font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;
+     text-transform:uppercase;color:var(--text-tertiary);margin:18px 0 0">
+     Aurora V2 · demo build · no real money</p>`;
+  if(!STATE.chat.length) STATE.chat=[{who:'ai',text:`Hi ${DB.user.first}. Ask me anything about your accounts — I read them straight from the app, so the numbers are always current.`}];
+  paintChat();
+  $('#askGo').addEventListener('click',sendAsk);
+  $('#askIn').addEventListener('keydown',e=>{ if(e.key==='Enter') sendAsk(); });
+}
+function paintChat(typing){
+  const c=$('#chat'); if(!c) return;
+  c.innerHTML = STATE.chat.map(m=>`<div class="msg ${m.who}">${m.text}</div>`).join('')
+    + (typing?`<div class="msg ai typing"><span></span><span></span><span></span></div>`:'');
+  c.scrollIntoView({block:'nearest'});
+  $('#scroll').scrollTop = $('#scroll').scrollHeight;
+}
+function sendAsk(text){
+  const input=$('#askIn');
+  const q = typeof text==='string' ? text : input.value.trim();
+  if(!q) return;
+  if(input) input.value='';
+  STATE.chat.push({who:'me',text:q});
+  paintChat(true);
+  setTimeout(()=>{ STATE.chat.push({who:'ai',text:answer(q)}); paintChat(); }, 420);
+}
+
+/* --- the intent engine: ~22 rules over live DB values --- */
+function answer(raw){
+  const q=raw.toLowerCase();
+  const has=(...w)=>w.some(t=>q.includes(t));
+  const kv=s=>`<span class="kv">${s}</span>`;
+
+  if(has('freeze','lock my card','stop my card')){
+    card().frozen=true; if(STATE.tab==='home'&&STATE.seg==='card') renderHome();
+    return `${card().label} card frozen. Nothing new will go through — taps, online, ATM. Unfreeze any time from <b>Home → Card</b>.`;
+  }
+  if(has('unfreeze','unlock my card')){
+    card().frozen=false; if(STATE.tab==='home'&&STATE.seg==='card') renderHome();
+    return `${card().label} card is live again.`;
+  }
+  if(has('total','net worth','all my money','how much do i have','how much money'))
+    return `Across every account you have ${kv(money(netWorth()))}. That's Spend ${kv(money(DB.accounts[0].bal))}, Grow ${kv(money(DB.accounts[1].bal))} and Invest ${kv(money(DB.accounts[2].bal))}.`;
+  if(has('chequing','checking','spend account','in spend'))
+    return `Spend has ${kv(money(DB.accounts[0].bal))} available, plus ${kv(money0(DB.cardSettings.cushion))} of Cushion behind it.`;
+  if(has('savings','grow','interest','apy'))
+    return `Grow holds ${kv(money(DB.accounts[1].bal))} at 4.10%. It earned ${kv('$31.42')} in July.`;
+  if(has('portfolio','invested','investments','how are my stocks','tfsa')){
+    const d=dayChange();
+    return `Your portfolio is ${kv(money(portfolio()))}, ${d<0?'down':'up'} ${kv(signed(d))} today. ${DB.holdings.length} positions plus ${kv(money(DB.cash))} in cash.`;
+  }
+  const sym = DB.holdings.find(h=>q.includes(h.t.split('.')[0].toLowerCase())||q.includes(h.n.toLowerCase().split(' ')[0]));
+  if(sym) return `${sym.n} (${sym.t}) is ${kv(money(sym.p))}, ${sym.d<0?'down':'up'} ${kv(pct(sym.d))} today. You hold ${kv(sym.q+'')} worth ${kv(money(sym.q*sym.p))}.`;
+  if(has('spent','spending','how much have i')){
+    return `${DB.spend.month} spending is ${kv(money(DB.spend.total))} of a ${kv(money0(DB.spend.budget))} budget — ${kv(money(spendLeft()))} left with 7 days to go.`;
+  }
+  const cat = DB.spend.cats.find(c=>q.includes(c.n.toLowerCase().split(' ')[0]));
+  if(cat) return `${cat.n} is ${kv(money(cat.v))} this month — ${kv((cat.v/DB.spend.total*100).toFixed(0)+'%')} of everything you've spent.`;
+  if(has('afford','can i spend','safe to spend','left to spend'))
+    return `You've got ${kv(money(spendLeft()))} of budget left, which is about ${kv(money(spendLeft()/7))} a day until the month closes. Rent of ${kv(money(1150))} is already accounted for.`;
+  if(has('biggest','most','top expense','largest'))
+    return `Rent at ${kv(money(1150))} is the largest single charge. Ignoring rent, <b>Groceries</b> leads at ${kv(money(DB.spend.cats[0].v))}.`;
+  if(has('rent'))
+    return `Rent is ${kv(money(1150))} to Crystal Ridge, due <b>Aug 1</b> — 7 days out. Spend covers it with ${kv(money(DB.accounts[0].bal-1150))} to spare.`;
+  if(has('bill','due','upcoming','coming up')){
+    const t=DB.bills.reduce((s,b)=>s+b.a,0);
+    return `Three bills in the next ten days totalling ${kv(money(t))}: ` + DB.bills.map(b=>`${b.n} ${money(b.a)} on ${b.due}`).join(', ') + '.';
+  }
+  if(has('credit score','my score','equifax'))
+    return `You're at ${kv(DB.credit.score+'')} — ${DB.credit.band}, up ${kv(DB.credit.delta+' points')} this month. Six months ago it was ${kv(DB.credit.hist[0]+'')}.`;
+  if(has('improve','raise my','build credit','credit up','why did my credit'))
+    return `Two things are moving it. Payment history is perfect at 100%, and that's the heavy one. The drag is <b>credit used</b> at 36% — paying the Credit Builder down to ${kv('$150')} puts you under 30%, which usually reads better.`;
+  if(has('card number','card details','cvv','expiry','reveal'))
+    return `Open <b>Home → Card</b> and tap <b>Show details</b>. The number, expiry and CVV appear on the card itself. It's a virtual card, so those details work online right away.`;
+  if(has('cushion','overdraft','negative','short'))
+    return `Cushion fronts you up to ${kv(money0(DB.cardSettings.cushion))} when a purchase would overdraw Spend. No fee, no interest — it comes off your next deposit automatically.`;
+  if(has('paid','payday','payroll','salary'))
+    return `Your last payroll was ${kv(money(1842.55))} from Skechers on <b>Jul 23</b>. Early payday releases direct deposits up to ${kv(DB.cardSettings.payday+' days')} before the official date, so the next one should land around <b>Aug 5</b>.`;
+  if(has('round','spare change'))
+    return `Every card purchase rounds up to the next dollar and the difference moves to Grow. It's added ${kv('$12.80')} this week. Toggle it under <b>Invest → Automation</b>.`;
+  if(has('goal','saving for','emergency fund','laptop','tires')){
+    const g=DB.goals.map(x=>`${x.n} ${money(x.now)}/${money0(x.tgt)}`).join(', ');
+    return `Three goals running: ${kv(g)}. Round-ups feed them automatically.`;
+  }
+  if(has('automation','auto-invest','automatic','recurring')){
+    const on=DB.automation.filter(a=>a.on).map(a=>a.b).join(', ');
+    return `Active right now: ${kv(on)}. The full list is under <b>Invest → Automation</b>.`;
+  }
+  if(has('watchlist','watching','starred'))
+    return DB.watch.length ? `You're watching ${kv(DB.watch.join(', '))}. Tap any of them in <b>Discover</b> for the chart.`
+                           : `Your watchlist is empty. Star anything in <b>Discover</b> to track it.`;
+  if(has('send','transfer','e-transfer','pay someone','move money'))
+    return `Use the <b>Move</b> tab. Pick a person, type the amount, send. Between your own Aurora accounts it's instant; to anyone else it goes out as an Interac e-Transfer.`;
+  if(has('protected','safe','insured','cdic','security'))
+    return `Deposits are held at a CDIC member institution and covered to ${kv('$100,000')}. The card is virtual, so you can freeze or replace the number without waiting on plastic. This is a demo build, though — no real money is involved.`;
+  if(has('hello','hi ','hey','good morning','good evening'))
+    return `Hey ${DB.user.first}. Your balance is ${kv(money(netWorth()))} and nothing needs your attention today.`;
+  if(has('what can you','help','who are you','what do you do'))
+    return `I read your accounts on this device and answer from them. Try: <b>how much can I spend</b>, <b>when is rent due</b>, <b>how is my portfolio doing</b>, <b>why did my credit score change</b>, or <b>freeze my card</b>.`;
+  return `I don't have a rule for that one yet — this assistant runs entirely on-device with no model behind it, so it only knows your accounts. Try asking about your <b>balance</b>, <b>spending</b>, <b>bills</b>, <b>credit score</b>, <b>portfolio</b> or your <b>card</b>.`;
+}
+
+/* ============================================================
+   9. INTERACTION — one delegated listener for the whole app
+   ============================================================ */
+document.addEventListener('click',e=>{
+  const t=e.target;
+  const q=s=>t.closest(s);
+
+  const jump=q('[data-seg-jump]');
+  if(jump){ STATE.seg=jump.dataset.segJump;
+    $$('#seg button').forEach(x=>x.setAttribute('aria-selected',x.dataset.seg===STATE.seg));
+    $('#seg').querySelector(`[data-seg="${STATE.seg}"]`).scrollIntoView({inline:'center',behavior:'smooth'});
+    renderHome(); $('#scroll').scrollTop=0; return; }
+
+  const ci=q('[data-card-idx]');
+  if(ci){ const idx=+ci.dataset.cardIdx;
+          if(idx===STATE.cardIdx) return;
+          STATE.cardIdx=idx; STATE.reveal=false; restack();
+          toast(`${card().label} card`); return; }
+
+  const cb=q('[data-card]');
+  if(cb){ if(cb.dataset.card==='reveal'){ STATE.reveal=!STATE.reveal; toast(STATE.reveal?'Details visible':'Details hidden'); }
+          else { card().frozen=!card().frozen; toast(card().frozen?`${card().label} card frozen`:`${card().label} card unfrozen`); }
+          restack(); return; }
+
+  const tg=q('[data-tog]');
+  if(tg){ const k=tg.dataset.tog; DB.cardSettings[k]=!DB.cardSettings[k];
+          tg.setAttribute('aria-pressed',DB.cardSettings[k]);
+          toast(`${tg.querySelector('b').textContent} ${DB.cardSettings[k]?'on':'off'}`); return; }
+
+  const au=q('[data-auto]');
+  if(au){ const a=DB.automation.find(x=>x.id===au.dataset.auto); a.on=!a.on;
+          au.setAttribute('aria-pressed',a.on); toast(`${a.b} ${a.on?'on':'off'}`); return; }
+
+  const ch=q('[data-cat]');
+  if(ch){ $$('#txChips .chip').forEach(c=>c.setAttribute('aria-pressed',c===ch));
+          $('#txList').innerHTML=txRows(ch.dataset.cat); return; }
+
+  const tx=q('[data-tx]');
+  if(tx){ const x=DB.tx[+tx.dataset.tx];
+    openSheet(`<div class="eyebrow">${x.d}</div>
+      <h3 style="font-family:var(--f-display);font-size:22px;margin:4px 0 2px;letter-spacing:-.03em">${x.m}</h3>
+      <div style="font-family:var(--f-display);font-size:32px;font-weight:700;letter-spacing:-.035em;margin:8px 0 14px"
+        class="${x.a>0?'up':''}">${x.a>0?'+':''}${money(x.a).replace('-','−')}</div>
+      <div class="stats">
+        <div class="stat"><span class="k">Category</span><span class="v" style="font-size:14px">${x.c}</span></div>
+        <div class="stat"><span class="k">Account</span><span class="v" style="font-size:14px">Spend ·· 4182</span></div>
+        <div class="stat"><span class="k">Status</span><span class="v" style="font-size:14px">Settled</span></div>
+        <div class="stat"><span class="k">Method</span><span class="v" style="font-size:14px">${x.c==='Transfer'?'Internal':'Tap'}</span></div>
+      </div>
+      <div class="btn2" style="margin-top:16px">
+        <button class="btn ghost" data-act="split">Split with someone</button>
+        <button class="btn alert" data-act="dispute">Report a problem</button>
+      </div>
+      <button class="btn ghost" style="margin-top:10px" onclick="closeSheet()">Close</button>`); return; }
+
+  const g=q('[data-goal]');
+  if(g){ const goal=DB.goals[+g.dataset.goal], add=+g.dataset.add;
+         goal.now=Math.min(goal.tgt,goal.now+add); DB.accounts[1].bal-=add;
+         toast(`${money(add)} added to ${goal.n}`); renderHome(); return; }
+
+  const rg=q('[data-range]');
+  if(rg){ STATE.range=rg.dataset.range; renderInvest(); animateBars(); revealOn(); return; }
+
+  const sy=q('[data-sym]'); if(sy){ symSheet(sy.dataset.sym); return; }
+
+  const st=q('[data-star]');
+  if(st){ const s=st.dataset.star; const i=DB.watch.indexOf(s);
+          if(i<0){ DB.watch.push(s); toast(`${s} added to watchlist`); }
+          else { DB.watch.splice(i,1); toast(`${s} removed`); }
+          closeSheet(); if(STATE.tab==='discover') renderDiscover(); return; }
+
+  const by=q('[data-buy]');
+  if(by){ closeSheet(); toast(`Demo order for ${by.dataset.buy} — nothing was bought`); return; }
+
+  const jp=q('[data-jump]');
+  if(jp){ const el=$('#sec-'+jp.dataset.jump);
+          if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); return; }
+
+  const br=q('[data-branch]');
+  if(br){ toast(`${br.dataset.branch} — demo only`); return; }
+
+  const pp=q('[data-person]');
+  if(pp){ STATE.payee = STATE.payee===pp.dataset.person ? null : pp.dataset.person;
+          $$('#people .person').forEach(x=>x.setAttribute('aria-pressed',x.dataset.person===STATE.payee)); return; }
+
+  const pd=q('[data-pad]');
+  if(pd){ const k=pd.dataset.pad; let a=STATE.amount;
+    if(k==='⌫') a=a.slice(0,-1);
+    else if(k==='.'){ if(!a.includes('.')) a=(a||'0')+'.'; }
+    else if(!(a.includes('.') && a.split('.')[1].length>=2)) a=(a==='0'?'':a)+k;
+    STATE.amount=a; $('.padamt').textContent='$'+(a||'0'); return; }
+
+  const say=q('[data-say]'); if(say){ sendAsk(say.dataset.say); return; }
+
+  const ac=q('[data-act]');
+  if(ac){
+    const a=ac.dataset.act;
+    if(a==='send-now'||a==='request'){
+      const v=parseFloat(STATE.amount||'0');
+      if(!STATE.payee) return toast('Pick someone to send to');
+      if(!v) return toast('Enter an amount');
+      if(a==='send-now'&&v>DB.accounts[0].bal) return toast('More than Spend can cover');
+      if(a==='send-now'){ DB.accounts[0].bal-=v; DB.moves.unshift({n:STATE.payee,s:'Interac e-Transfer · sent',a:-v}); }
+      else DB.moves.unshift({n:STATE.payee,s:'Request sent',a:0});
+      toast(a==='send-now'?`${money(v)} sent to ${STATE.payee}`:`Requested ${money(v)} from ${STATE.payee}`);
+      STATE.amount=''; STATE.payee=null; renderMove(); revealOn(); return;
+    }
+    if(a==='send'||a==='to-grow'||a==='to-invest'||a==='pay-build'){ go('move'); return; }
+    toast('Demo build — that flow is a placeholder');
+  }
+});
+
+/* Enter/Space on a stacked card behaves like a tap */
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter'&&e.key!==' ') return;
+  const el=e.target.closest&&e.target.closest('.slot[role="button"]');
+  if(el){ e.preventDefault(); el.click(); }
+});
+
+/* card tilt + sheen */
+$('#phone').addEventListener('pointermove',e=>{
+  const c=$('#cardArt'); if(!c) return;
+  const r=c.getBoundingClientRect();
+  const x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height;
+  if(x<-.2||x>1.2||y<-.4||y>1.4){ c.style.setProperty('--rx','0deg'); c.style.setProperty('--ry','0deg'); return; }
+  c.style.setProperty('--ry',((x-.5)*6).toFixed(2)+'deg');
+  c.style.setProperty('--rx',((.5-y)*4).toFixed(2)+'deg');
+  c.style.setProperty('--sheen',(x*30-14).toFixed(1)+'%');
+},{passive:true});
+
+/* ============================================================
+   10. THEME — the ramp is fixed, only role bindings flip
+   ============================================================ */
+function setTheme(t){
+  document.documentElement.dataset.theme = t;
+  $('#metaTheme').setAttribute('content', t==='light' ? '#eff8ed' : '#061305');
+  const b=$('#btnTheme');
+  b.innerHTML = ic(t==='light' ? 'i-moon' : 'i-sun');
+  b.setAttribute('aria-label', t==='light' ? 'Switch to dark mode' : 'Switch to light mode');
+}
+$('#btnTheme').addEventListener('click',()=>{
+  const next = document.documentElement.dataset.theme==='light' ? 'dark' : 'light';
+  setTheme(next); toast(next==='light' ? 'Light mode' : 'Dark mode');
+});
+const mqLight = matchMedia('(prefers-color-scheme: light)');
+if(mqLight.addEventListener) mqLight.addEventListener('change',e=>setTheme(e.matches?'light':'dark'));
+
+/* ============================================================
+   11. INIT
+   ============================================================ */
+(function init(){
+  const h=new Date().getHours();
+  $('#greetTime').textContent = (h<12?'Good morning':h<17?'Good afternoon':'Good evening') + ' · ' + DB.user.city;
+  setTheme(document.documentElement.dataset.theme||'dark');
+  renderHome();
+  requestAnimationFrame(()=>{
+    animateBars(); revealOn();
+    const gf=$('#gaugeFill'); if(gf) gf.style.strokeDashoffset=251.3*(1-(DB.credit.score-300)/600);
+  });
+})();
+</script>
+</body>
+</html>
